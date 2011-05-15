@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MainActivity</string>
+    <string name="app_name">Tengwa Djvu</string>
+
+    <!--All-purpose strings-->
+    <string name="open">Open</string>
+    <string name="go_to">Go to</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="home">Home</string>
+    <string name="end">End</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+
+    <!--Text stubs-->
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur
+        adipiscing elit. Suspendisse iaculis justo id ante rhoncus commodo
+        sed sit amet nisi. Ut ac est ligula. Nunc luctus, ligula ac porttitor
+        convallis, mi risus lobortis odio, a bibendum neque tortor quis nibh.
+        Aenean vel libero nulla. Nulla dignissim sollicitudin dolor a commodo.
+        Maecenas scelerisque lectus non velit dictum blandit a quis nisl.
+        Fusce nec mi sit amet libero placerat feugiat. Pellentesque vitae
+        commodo libero. Nunc nec turpis sed arcu condimentum viverra. Proin
+        enim tortor, posuere in convallis eu, pharetra in ante.</string>
 </resources>

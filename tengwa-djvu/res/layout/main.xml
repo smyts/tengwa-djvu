@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--Layout for MainActivity-->
+<!--TODO: add icons for navigation buttons, replace main_text_stub with an image-->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+    <TextView android:id="@+id/main_text_stub"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="@string/lorem_ipsum"/>
+
+    <LinearLayout android:id="@+id/toolbar"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  >
+        <Button android:id="@+id/toolbar_home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/home"/>
+        <Button android:id="@+id/toolbar_prev"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/previous"/>
+        <Button android:id="@+id/toolbar_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/next"/>
+        <Button android:id="@+id/toolbar_end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/end"/>
+    </LinearLayout>
 
 </LinearLayout>
 
