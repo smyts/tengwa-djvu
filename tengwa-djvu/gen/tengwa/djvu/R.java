@@ -14,33 +14,39 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int main_text_stub=0x7f060000;
-        public static final int menu_item_about=0x7f060009;
-        public static final int menu_item_goto=0x7f060007;
-        public static final int menu_item_open=0x7f060006;
-        public static final int menu_item_settings=0x7f060008;
-        public static final int toolbar=0x7f060001;
-        public static final int toolbar_end=0x7f060005;
-        public static final int toolbar_home=0x7f060002;
-        public static final int toolbar_next=0x7f060004;
-        public static final int toolbar_prev=0x7f060003;
+        public static final int go_to_page_button=0x7f060001;
+        public static final int main_text_stub=0x7f060002;
+        public static final int menu_item_about=0x7f06000b;
+        public static final int menu_item_goto=0x7f060009;
+        public static final int menu_item_open=0x7f060008;
+        public static final int menu_item_settings=0x7f06000a;
+        public static final int page_to_go=0x7f060000;
+        public static final int toolbar=0x7f060003;
+        public static final int toolbar_end=0x7f060007;
+        public static final int toolbar_home=0x7f060004;
+        public static final int toolbar_next=0x7f060006;
+        public static final int toolbar_prev=0x7f060005;
     }
     public static final class layout {
-        public static final int main=0x7f030000;
+        public static final int about_dialog=0x7f030000;
+        public static final int go_to_dialog=0x7f030001;
+        public static final int main=0x7f030002;
     }
     public static final class menu {
         public static final int main=0x7f050000;
     }
     public static final class string {
         public static final int about=0x7f040004;
+        public static final int about_text=0x7f04000b;
         public static final int app_name=0x7f040000;
         public static final int end=0x7f040006;
         public static final int go_to=0x7f040002;
         public static final int home=0x7f040005;
         /** Text stubs
          */
-        public static final int lorem_ipsum=0x7f040009;
+        public static final int lorem_ipsum=0x7f04000a;
         public static final int next=0x7f040008;
+        public static final int ok=0x7f040009;
         /** All-purpose strings
          */
         public static final int open=0x7f040001;

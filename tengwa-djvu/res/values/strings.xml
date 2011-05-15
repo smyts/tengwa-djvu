@@ -11,6 +11,7 @@
     <string name="end">End</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
+    <string name="ok">Ok</string>
 
     <!--Text stubs-->
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur
@@ -22,4 +23,9 @@
         Fusce nec mi sit amet libero placerat feugiat. Pellentesque vitae
         commodo libero. Nunc nec turpis sed arcu condimentum viverra. Proin
         enim tortor, posuere in convallis eu, pharetra in ante.</string>
+
+    <string name="about_text">
+        Tengwa Djvu (c) 2011 \n
+        http://primorial.dyndns.org:8066/djvu-android
+    </string>
 </resources>
