@@ -4,12 +4,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.*;
 
 public class MainActivity extends Activity {
     public static final int GO_TO_DIALOG = 0;
     public static final int ABOUT_DIALOG = 1;
+    public static final int SETTINGS_ACTIVITY = 2;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -17,6 +21,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         setTitle(R.string.app_name);
+        loadPreferences();
     }
 
     @Override
@@ -52,6 +57,7 @@ public class MainActivity extends Activity {
             showDialog(GO_TO_DIALOG);
             break;
         case R.id.menu_item_settings:
+            startActivityForResult(new Intent(this, SettingsActivity.class), SETTINGS_ACTIVITY);
             break;
         }
         return true;
@@ -82,5 +88,23 @@ public class MainActivity extends Activity {
             return dialog;
         }
         return null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent){
+        switch (requestCode){
+        case SETTINGS_ACTIVITY:
+            loadPreferences();
+        }
+    }
+
+    private void loadPreferences(){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        View toolbar = findViewById(R.id.toolbar);
+        if (sp.getBoolean("toolbar_on", true)){
+            toolbar.setVisibility(View.VISIBLE);
+        } else {
+            toolbar.setVisibility(View.GONE);
+        }
     }
 }
