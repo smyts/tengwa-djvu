@@ -12,7 +12,9 @@
     <string name="previous">Previous</string>
     <string name="next">Next</string>
     <string name="ok">Ok</string>
+    <string name="recent">Recent</string>
     <string name="toolbar_on">Navigation toolbar on</string>
+    <string name="browse_files">Browse files</string>
 
     <!--Text stubs-->
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur
@@ -28,5 +30,9 @@
     <string name="about_text">
         Tengwa Djvu (c) 2011 \n
         http://primorial.dyndns.org:8066/djvu-android
+    </string>
+
+    <string name="note_for_file_browsing">
+        For performing this action you must have a file manager
     </string>
 </resources>

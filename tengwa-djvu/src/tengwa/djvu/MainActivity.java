@@ -9,11 +9,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.*;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     public static final int GO_TO_DIALOG = 0;
     public static final int ABOUT_DIALOG = 1;
     public static final int SETTINGS_ACTIVITY = 2;
+    public static final int OPEN_FILE_ACTIVITY = 3;
+
+    private RecentDbAdapter mDbAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -22,6 +26,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
         setTitle(R.string.app_name);
         loadPreferences();
+        mDbAdapter = new RecentDbAdapter(getApplicationContext());
+        mDbAdapter.open();
     }
 
     @Override
@@ -52,6 +58,7 @@ public class MainActivity extends Activity {
             showDialog(ABOUT_DIALOG);
             break;
         case R.id.menu_item_open:
+            startActivityForResult(new Intent(this, OpenFileActivity.class), OPEN_FILE_ACTIVITY);
             break;
         case R.id.menu_item_goto:
             showDialog(GO_TO_DIALOG);
@@ -71,11 +78,13 @@ public class MainActivity extends Activity {
         case ABOUT_DIALOG:
             builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.about);
-            builder.setView(inflater.inflate(R.layout.about_dialog, (ViewGroup) findViewById(R.layout.main)));
+            builder.setView(inflater.inflate(R.layout.about_dialog,
+                    (ViewGroup) findViewById(R.layout.main)));
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialogInterface, int id) {
-                    dialogInterface.cancel();
-                }
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                  }
+
             });
             return builder.create();
         case GO_TO_DIALOG:
@@ -95,6 +104,24 @@ public class MainActivity extends Activity {
         switch (requestCode){
         case SETTINGS_ACTIVITY:
             loadPreferences();
+            break;
+        case OPEN_FILE_ACTIVITY:
+            if (resultCode == RESULT_OK){
+                Bundle data = intent.getExtras();
+                String path = data.getString(RecentDbAdapter.KEY_PATH);
+                String name = data.getString(RecentDbAdapter.KEY_NAME);
+                int page = data.getInt(RecentDbAdapter.KEY_PAGE, -1);
+                {   //TODO: save path, name, page parameters and open file
+                    // this is stub, remove it
+                    if (name == null){
+                        int first = path.lastIndexOf('/'), last = path.lastIndexOf('.');
+                        name = path.substring(first + 1, last);
+                    }
+                    Toast.makeText(this, name, 300).show();
+                    mDbAdapter.create(name, path, 1);
+                }
+            }
+            break;
         }
     }
 
