@@ -121,6 +121,14 @@
 # define HAS_MBSTATE 1
 #endif
 
+// added for android compilation
+#if defined(ANDROID_NDK)
+# define HAS_MBSTATE 1
+# define HAVE_INTTYPES_H 1
+# define HAS_WCHAR 1
+# define HAVE_WCHAR_H 1
+#endif
+
 #if HAS_WCHAR
 # if !defined(AUTOCONF) || HAVE_WCHAR_H
 #  include <wchar.h>
@@ -129,8 +137,7 @@
 
 #if HAVE_STDINT_H
 # include <stdint.h>
-# // the following line was edited to compile under Android
-#elif defined(HAVE_INTTYPES_H) || defined(ANDROID_NDK)
+#elif defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
 #else
 # ifdef WIN32
@@ -149,6 +156,7 @@ namespace DJVU {
 }
 #endif
 #endif
+
 
 #if !HAS_MBSTATE
 # ifndef HAVE_MBSTATE_T

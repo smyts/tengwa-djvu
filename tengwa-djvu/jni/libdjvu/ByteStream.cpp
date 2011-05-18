@@ -81,6 +81,12 @@
 # include <io.h>
 #endif
 
+// added for android ndk compilation
+#ifdef ANDROID_NDK
+# define UNIX 1
+# include "GString.h"
+#endif
+
 #ifdef UNIX
 # ifndef HAS_MEMMAP
 #  define HAS_MEMMAP 1
@@ -425,10 +431,14 @@ ByteStream::format(const char *fmt, ... )
   return writestring(message);
 }
 
+
+// modified for android compilation
 size_t
 ByteStream::writestring(const GNativeString &s)
 {
   int retval;
+
+#ifdef HAS_WCHAR
   if(cp != UTF8)
   {
     retval=writall((const char *)s,s.length());
@@ -436,26 +446,41 @@ ByteStream::writestring(const GNativeString &s)
       cp=NATIVE; // Avoid mixing string types.
   }else
   { 
+#endif
+
     const GUTF8String msg(s.getNative2UTF8());
     retval=writall((const char *)msg,msg.length());
+
+#ifdef HAS_WCHAR
   }
+#endif
   return retval;
 }
 
+
+// modified for android compilation
 size_t
 ByteStream::writestring(const GUTF8String &s)
 {
   int retval;
+
+#ifdef HAS_WCHAR
   if(cp != NATIVE)
   {
+#endif
+
     retval=writall((const char *)s,s.length());
     if(cp == AUTO)
       cp=UTF8; // Avoid mixing string types.
+
+#ifdef HAS_WCHAR
   }else
   { 
     const GNativeString msg(s.getUTF82Native());
     retval=writall((const char *)msg,msg.length());
   }
+#endif
+
   return retval;
 }
 

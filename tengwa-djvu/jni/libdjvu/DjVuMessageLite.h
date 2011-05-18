@@ -181,10 +181,14 @@ public:
   static GUTF8String LookUpUTF8( const GUTF8String & MessageList )
   { return create().LookUp(MessageList); }
 
+
+// added for android compilation
+#ifdef HAS_WCHAR
   /** Same as Lookup, but returns the a multibyte character string in the
       current locale. */
   static GNativeString LookUpNative( const GUTF8String & MessageList )
   { return create().LookUp(MessageList).getUTF82Native(); }
+#endif
 
   /// This is a simple alias to the above class, but does an fprintf to stderr.
   static void perror( const GUTF8String & MessageList );

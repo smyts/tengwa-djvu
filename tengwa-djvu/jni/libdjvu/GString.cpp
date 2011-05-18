@@ -76,6 +76,12 @@
 #include "GThreads.h"
 #include "debug.h"
 
+// added for android compilation
+#if defined(ANDROID_NDK)
+# define UNIX 1
+# define HAS_WCHAR 1
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

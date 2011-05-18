@@ -78,6 +78,11 @@
 # define UNIX 1
 #endif
 
+// added for Android compilation
+#if defined(ANDROID_NDK)
+# define UNIX 1
+#endif
+
 #if defined(WIN32) && !defined(UNIX)
 # include <windows.h>
 # include <direct.h>

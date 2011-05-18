@@ -113,10 +113,14 @@ public:
   static GUTF8String LookUpUTF8( const GUTF8String & MessageList )
   { use_language();return DjVuMessageLite::LookUpUTF8(MessageList); }
 
+
+// added for android compilation
+#ifdef HAS_WCHAR
   /** Same as Lookup, but returns a multibyte character string in the
       current locale. */
   static GNativeString LookUpNative( const GUTF8String & MessageList )
   { use_language();return DjVuMessageLite::LookUpNative(MessageList); }
+#endif
 
   /// This is a simple alias to the above class, but does an fprintf to stderr.
   static void perror( const GUTF8String & MessageList )

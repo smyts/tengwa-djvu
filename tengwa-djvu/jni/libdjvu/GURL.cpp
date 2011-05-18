@@ -101,6 +101,12 @@
 # endif
 #endif
 
+
+// added for android compilation
+#if defined(ANDROID_NDK)
+# define UNIX
+#endif
+
 #if defined(UNIX) || defined(OS2)
 # include <unistd.h>
 # include <sys/types.h>

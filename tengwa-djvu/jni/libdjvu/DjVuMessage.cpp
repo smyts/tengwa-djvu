@@ -557,7 +557,8 @@ DjVuMessage::~DjVuMessage( )
 {
 }
 
-
+// added for android compilation
+#ifdef WCHAR
 //  A C function to perform a message lookup. Arguments are a buffer to receiv
 //  translated message, a buffer size (bytes), and a message_list. The transla
 //  result is returned in msg_buffer encoded in Native MBS encoding. In case
@@ -572,6 +573,7 @@ DjVuMessageLookUpNative(
   else
     strcpy( msg_buffer, converted );
 }
+#endif
 
 //  A C function to perform a message lookup. Arguments are a buffer to receiv
 //  translated message, a buffer size (bytes), and a message_list. The transla

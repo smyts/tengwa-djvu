@@ -70,6 +70,11 @@
 #include "DjVuMessageLite.h"
 #include "debug.h"
 
+// for android
+#ifdef ANDROID_NDK
+# include <new>
+# define HAVE_STDINCLUDES
+#endif
 
 #ifdef HAVE_NAMESPACES
 namespace DJVU {
