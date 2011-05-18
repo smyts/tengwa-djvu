@@ -129,7 +129,8 @@
 
 #if HAVE_STDINT_H
 # include <stdint.h>
-#elif HAVE_INTTYPES_H
+# // the following line was edited to compile under Android
+#elif defined(HAVE_INTTYPES_H) || defined(ANDROID_NDK)
 # include <inttypes.h>
 #else
 # ifdef WIN32

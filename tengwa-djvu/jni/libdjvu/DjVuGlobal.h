@@ -68,8 +68,9 @@
 #if defined(UNDER_CE)
 # ifndef __WCEALT_H__
 inline void * operator new(size_t, void * ptr) { return ptr; }
-# endif
-#elif defined(AUTOCONF) && defined(HAVE_STDINCLUDES)
+# endif 
+# // next line changed to compile under Android (last condition was added)
+#elif defined(AUTOCONF) && defined(HAVE_STDINCLUDES) || defined(ANDROID_NDK)
 # include <new>
 #else
 # include <new.h>
