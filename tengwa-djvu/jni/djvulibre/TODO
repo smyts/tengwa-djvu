@@ -1,0 +1,11 @@
+Advices:
+--------
+        * edit configure-android to automatically check and use
+          env. variable ANDROID_NDK_DIR (or something alike)
+        * edit configure-android to get command line params:
+               + ndk-dir
+               + abi target
+               + djvulibre sources directory
+               + other different compile params (like fexceptions)
+        * edit configure-android to be able to compile djvulibre
+          from any directory (not only current)

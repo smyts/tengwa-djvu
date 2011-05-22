@@ -1,0 +1,47 @@
+What is it
+----------
+
+This file describes the process of compilation "djvulibre" library
+as shared, under Android OS with target abi as arm5.
+
+Aboud DjVuLibre:
+----------------
+
+Sources from the djvulibre were taken partially (libdjvu dir
+and others necesessary for the default "djvulibre"'s
+./configure file. All copyrights stay where they were.
+
+You can read more about DjVuLibre here:
+    * http://djvu.sourceforge.net/ - website
+    * Github repository clone command:
+             git clone git://djvu.git.sourceforge.net/djvu/djvulibre.git
+
+Installation:
+-------------
+
+1) Run ./android-configure. It will automatically setup env. variables,
+   execute ./confugre script of the "djvulibre" library and then,
+   will copy generated config.h file to the "libdjvu/" directory.
+2) Modify following parametes within generated  config.h file, 
+   add new lines to some source files:
+          * comment out:
+                    + #define pid_t int
+                    + #define HAVE_EXCEPTIONS 1
+          * add:
+                    + #define HAVE_WCHAR_H 1
+                    + #define HAVE_WCHAR_T 1
+                    + #define HAVE_DIRENT_H 1
+                    + #define HAVE_WCTYPE_H 1
+                    + #define HAVE_MBSTATE_T 1
+          * edit DjVuToPS.cpp, put somewhere in the beginning:
+                 #ifdef ANDROID_NDK
+                 # undef UNIX
+                 #endif           
+          * edit GException.cpp, put before DjVuGlobal.h include there:
+                 #ifdef ANDROID_NDK
+                 # undef HAVE_STDINCLUDES
+                 # include <new>
+                 #endif           
+
+
+3) Run ndk-build command at the current directory.

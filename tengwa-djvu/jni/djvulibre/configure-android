@@ -1,0 +1,25 @@
+ANDROID_NDK_ROOT=$HOME/.android/android-ndk-r5b
+
+PREBUILT=$ANDROID_NDK_ROOT/toolchains/arm-eabi-4.4.0
+PLATFORM=$ANDROID_NDK_ROOT/platforms/android-5/arch-arm
+CPP_DIR=$ANDROID_NDK_ROOT/cxx-stl/gnu-libstdc++
+export CC=$ANDROID_NDK_ROOT/toolchains/arm-eabi-4.4.0/prebuilt/linux-x86/bin/arm-eabi-gcc
+
+LDFLAGS="-Wl,-rpath-link=$PLATFORM/usr/lib "
+LDFLAGS+="-L$PLATFORM/usr/lib "
+LDFLAGS+="-L$CPP_DIR/libs/armeabi"
+export LDFLAGS
+
+CFLAGS="-nostdlib "
+CFLAGS+=-DHAVE_SYS_TYPES_H
+export CFLAGS
+
+CPPFLAGS="-I$PLATFORM/usr/include "
+#CPPFLAGS+="-I$CPP_DIR/include "
+#CPPFLAGS+="-I$CPP_DIR/libs/armeabi/include "
+export CPPFLAGS
+
+LIBS=""
+./configure --host=arm-eabi --disable-xmltools --disable-i18n --disable-desktopfiles
+chmod 777 config.h
+mv config.h libdjvu/
