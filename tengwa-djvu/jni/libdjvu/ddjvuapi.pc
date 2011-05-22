@@ -9,5 +9,5 @@ Version: 3.5.24
 Requires:
 Conflicts:
 Libs: -L${libdir} -ldjvulibre 
-Libs.private:   -lpthread -lm 
-Cflags: -I${includedir}   -pthread
+Libs.private:   -lm 
+Cflags: -I${includedir}  

@@ -5,6 +5,7 @@
 */out/*
 local.properties
 build.xml
+*.status
 
 #log
 *.log
@@ -16,6 +17,9 @@ build.xml
 *.a
 *.o
 *.o.d
+
+#build
+*.status
 
 #except
 !libdjvulibre-android.so
