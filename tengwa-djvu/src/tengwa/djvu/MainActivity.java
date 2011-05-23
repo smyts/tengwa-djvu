@@ -28,6 +28,11 @@ public class MainActivity extends Activity {
         loadPreferences();
         mDbAdapter = new RecentDbAdapter(getApplicationContext());
         mDbAdapter.open();
+        Djvulibre.contextCreate();
+        int cachesize = Djvulibre.cacheGetSize();
+        Djvulibre.cacheSetSize(5 * (1 << 20));
+        Djvulibre.cacheClear();
+        Djvulibre.contextRelease();
     }
 
     @Override
