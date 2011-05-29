@@ -20,5 +20,6 @@ build.xml
 
 #build
 *.status
+tengwa-djvu/jni/djvulibre/libtool
 
 #except

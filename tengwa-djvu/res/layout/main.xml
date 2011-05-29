@@ -8,37 +8,41 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <TextView android:id="@+id/main_text_stub"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              android:text="@string/lorem_ipsum"/>
+    <ImageView android:id="@+id/doc_view"
+               android:layout_width="fill_parent"
+               android:layout_height="fill_parent"
+               android:layout_weight="1"
+               />
 
     <LinearLayout android:id="@+id/toolbar"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   >
-        <Button android:id="@+id/toolbar_home"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/home"/>
-        <Button android:id="@+id/toolbar_prev"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/previous"/>
-        <Button android:id="@+id/toolbar_next"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/next"/>
-        <Button android:id="@+id/toolbar_end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/end"/>
+        <ImageButton android:id="@+id/toolbar_home"
+                     android:layout_width="fill_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="1"
+                     android:src="@drawable/toolbar_home"
+                     />
+        <ImageButton android:id="@+id/toolbar_prev"
+                     android:layout_width="fill_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="1"
+                     android:src="@drawable/toolbar_prev"
+                     />
+        <ImageButton android:id="@+id/toolbar_next"
+                     android:layout_width="fill_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="1"
+                     android:src="@drawable/toolbar_next"
+                     />
+        <ImageButton android:id="@+id/toolbar_end"
+                     android:layout_width="fill_parent"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="1"
+                     android:src="@drawable/toolbar_end"
+                     />
     </LinearLayout>
 
 </LinearLayout>

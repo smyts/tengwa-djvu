@@ -12,12 +12,20 @@ public final class R {
     }
     public static final class drawable {
         public static final int icon=0x7f020000;
+        public static final int menu_about=0x7f020001;
+        public static final int menu_goto=0x7f020002;
+        public static final int menu_open=0x7f020003;
+        public static final int menu_settings=0x7f020004;
+        public static final int toolbar_end=0x7f020005;
+        public static final int toolbar_home=0x7f020006;
+        public static final int toolbar_next=0x7f020007;
+        public static final int toolbar_prev=0x7f020008;
     }
     public static final class id {
         public static final int browse_button=0x7f070008;
+        public static final int doc_view=0x7f070002;
         public static final int fullpath=0x7f07000b;
         public static final int go_to_page_button=0x7f070001;
-        public static final int main_text_stub=0x7f070002;
         public static final int menu_item_about=0x7f07000d;
         public static final int menu_item_goto=0x7f07000f;
         public static final int menu_item_open=0x7f07000e;

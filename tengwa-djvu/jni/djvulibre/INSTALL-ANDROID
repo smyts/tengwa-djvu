@@ -4,7 +4,7 @@ What is it
 This file describes the process of compilation "djvulibre" library
 as shared, under Android OS with target abi as arm5.
 
-Aboud DjVuLibre:
+About DjVuLibre:
 ----------------
 
 Sources from the djvulibre were taken partially (libdjvu dir
@@ -18,9 +18,10 @@ You can read more about DjVuLibre here:
 
 Installation:
 -------------
-
-1) Run ./android-configure. It will automatically setup env. variables,
-   execute ./confugre script of the "djvulibre" library and then,
+0) Modify ./configure-android file, set environment variable ANDROID_NDK_ROOT as 
+   path to your NDK directory.
+1) Run ./configure-android. It will automatically setup env. variables,
+   execute ./configure script of the "djvulibre" library and then,
    will copy generated config.h file to the "libdjvu/" directory.
 2) Modify following parametes within generated  config.h file, 
    add new lines to some source files:

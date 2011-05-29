@@ -56,6 +56,11 @@
 // $Id: GException.cpp,v 1.15 2007/03/25 20:48:31 leonb Exp $
 // $Name:  $
 
+#ifdef ANDROID_NDK
+# undef HAVE_STDINCLUDES
+# include <new>
+#endif 
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
