@@ -44,6 +44,8 @@ public class OpenFileActivity extends Activity {
                 intent.putExtra(RecentDbAdapter.KEY_PAGE, c.getInt(pageid));
                 OpenFileActivity.this.setResult(RESULT_OK, intent);
                 OpenFileActivity.this.finish();
+                c.close();
+                mRecentCursor.close();
             }
         });
 
@@ -51,6 +53,12 @@ public class OpenFileActivity extends Activity {
         mDbAdapter.open();
         checkRecent();
         fillRecent();
+    }
+
+    @Override
+    public void onStop(){
+        mRecentCursor.close();
+        super.onStop();
     }
 
     @Override
@@ -63,6 +71,7 @@ public class OpenFileActivity extends Activity {
                 i.putExtra(RecentDbAdapter.KEY_PATH, path);
                 setResult(RESULT_OK, i);
                 finish();
+                mRecentCursor.close();
             }
             break;
         }

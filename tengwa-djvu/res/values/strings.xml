@@ -15,6 +15,8 @@
     <string name="recent">Recent</string>
     <string name="toolbar_on">Navigation toolbar on</string>
     <string name="browse_files">Browse files</string>
+    <string name="go_to_header" formatted="false">Current page %d of %d</string>
+    <string name="zoom_coef">Zoom coefficient</string>
 
     <!--Text stubs-->
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur

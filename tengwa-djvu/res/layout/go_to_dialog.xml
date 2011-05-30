@@ -6,6 +6,11 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content">
 
+    <TextView android:id="@+id/go_to_page_header"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_horizontal" />
+
     <EditText android:id="@+id/page_to_go"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"

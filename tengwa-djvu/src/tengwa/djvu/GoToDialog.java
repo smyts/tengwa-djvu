@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class GoToDialog extends Dialog {
     interface GoToPageAction{
@@ -14,18 +15,23 @@ public class GoToDialog extends Dialog {
     }
 
     private GoToPageAction mGoToPageAction = null;
+    private String mHeader;
 
-    public GoToDialog(Context context){
+    public GoToDialog(Context context, String header){
         super(context);
+        mHeader = header;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         setContentView(R.layout.go_to_dialog);
         setTitle(R.string.go_to);
+        ((TextView) findViewById(R.id.go_to_page_header)).setText(mHeader);
+
         ViewGroup.LayoutParams params = getWindow().getAttributes();
         params.width = ViewGroup.LayoutParams.FILL_PARENT;
         getWindow().setAttributes((android.view.WindowManager.LayoutParams) params);
+
         Button btn = (Button) findViewById(R.id.go_to_page_button);
         btn.setOnClickListener(new View.OnClickListener(){
             public void onClick(View view) {

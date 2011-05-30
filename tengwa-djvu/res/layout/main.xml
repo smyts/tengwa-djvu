@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--Layout for MainActivity-->
-<!--TODO: add icons for navigation buttons, replace main_text_stub with an image-->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
@@ -19,29 +18,33 @@
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   >
-        <ImageButton android:id="@+id/toolbar_home"
+        <ImageButton android:id="@+id/toolbar_zoom_down"
                      android:layout_width="fill_parent"
                      android:layout_height="wrap_content"
                      android:layout_weight="1"
-                     android:src="@drawable/toolbar_home"
+                     android:src="@drawable/zoom_down"
+                     android:onClick="onToolbarClick"
                      />
         <ImageButton android:id="@+id/toolbar_prev"
                      android:layout_width="fill_parent"
-                     android:layout_height="wrap_content"
+                     android:layout_height="fill_parent"
                      android:layout_weight="1"
                      android:src="@drawable/toolbar_prev"
+                     android:onClick="onToolbarClick"
                      />
         <ImageButton android:id="@+id/toolbar_next"
                      android:layout_width="fill_parent"
-                     android:layout_height="wrap_content"
+                     android:layout_height="fill_parent"
                      android:layout_weight="1"
                      android:src="@drawable/toolbar_next"
+                     android:onClick="onToolbarClick"
                      />
-        <ImageButton android:id="@+id/toolbar_end"
+        <ImageButton android:id="@+id/toolbar_zoom_up"
                      android:layout_width="fill_parent"
                      android:layout_height="wrap_content"
                      android:layout_weight="1"
-                     android:src="@drawable/toolbar_end"
+                     android:src="@drawable/zoom_up"
+                     android:onClick="onToolbarClick"
                      />
     </LinearLayout>
 
