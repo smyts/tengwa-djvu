@@ -13,6 +13,7 @@ public class RecentDbAdapter {
     public static final String KEY_PATH = RecentDbHelper.KEY_PATH;
     public static final String KEY_PAGE = RecentDbHelper.KEY_PAGE;
     public static final String KEY_DATE = RecentDbHelper.KEY_DATE;
+    public static final String SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
 	private Context mContext;
 	private SQLiteDatabase mDatabase;
 	private RecentDbHelper mDbHelper;
@@ -32,6 +33,21 @@ public class RecentDbAdapter {
 	}
 
 	public long create(String name, String path, int page) {
+        Cursor c = mDatabase.rawQuery(SELECT_ALL, null);
+        int pathColumn = c.getColumnIndex(KEY_PATH);
+        if (c.moveToFirst()){
+            do {
+                String p = c.getString(pathColumn);
+                if (p.equals(path)) {
+                    long id = c.getLong(c.getColumnIndex(KEY_ROWID));
+                    update(id, page);
+                    c.close();
+                    return id;
+                }
+            } while (c.moveToNext());
+        }
+        c.close();
+
         ContentValues values = createContentValues(name, path, page);
 		return mDatabase.insert(TABLE_NAME, null, values);
 	}
@@ -74,4 +90,10 @@ public class RecentDbAdapter {
         values.put(KEY_DATE, System.currentTimeMillis());
 		return values;
 	}
+
+    private ContentValues createContentValues(long id, String name, String path, int page){
+        ContentValues values = createContentValues(name, path, page);
+        values.put(KEY_ROWID, id);
+		return values;
+    }
 }
