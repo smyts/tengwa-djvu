@@ -3,6 +3,7 @@ package tengwa.djvu;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,16 +11,19 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.*;
-import android.widget.ImageView;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.Toast;
 
 import java.util.Formatter;
 
 public class MainActivity extends Activity implements DataCatListener{
-    public static final int GO_TO_DIALOG = 0;
-    public static final int ABOUT_DIALOG = 1;
-    public static final int SETTINGS_ACTIVITY = 2;
-    public static final int OPEN_FILE_ACTIVITY = 3;
+    public static final int GO_TO_DIALOG = 1;
+    public static final int ABOUT_DIALOG = 2;
+    public static final int LOADING_DIALOG = 3;
+    public static final int ERROR_DIALOG = 4;
+
+    public static final int SETTINGS_ACTIVITY = 10;
+    public static final int OPEN_FILE_ACTIVITY = 11;
 
     private static final String FILE_PATH = "file path";
     private static final String CURRENT_PAGE = "current page";
@@ -28,7 +32,12 @@ public class MainActivity extends Activity implements DataCatListener{
     private DataCatBase mDataCat;
     private int mCurrentPage;
     private FileInfo mFileInfo;
+    private int mError;
+
     private Toast mPageToast;
+    private Dialog mLoadingDialog;
+    private PageView mPage;
+    private GestureDetector mDetector;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -38,7 +47,9 @@ public class MainActivity extends Activity implements DataCatListener{
 
         mPageToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         mPageToast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
-        mImage = (ImageView) findViewById(R.id.doc_view);
+
+        mPage = (PageView) findViewById(R.id.doc_view);
+        mPage.setImageDrawable(getResources().getDrawable(R.drawable.gray_background));
 
         loadPreferences();
 
@@ -49,22 +60,28 @@ public class MainActivity extends Activity implements DataCatListener{
         int cachesize = Djvulibre.cacheGetSize();
         Djvulibre.cacheSetSize(5 * (1 << 20));
         Djvulibre.cacheClear();
+        Djvulibre.contextRelease();
 
         //TODO: replace DataCatStub with real implementation
         mDataCat = new DataCatStub();
         mDataCat.bind(this);
-        Djvulibre.errorCall = mDataCat;
-        Djvulibre.docinfoCall = mDataCat;
-        Djvulibre.pageinfoCall = mDataCat;
-        Djvulibre.redisplayCall = mDataCat;
 
         if (savedInstanceState == null){
             startActivityForResult(new Intent(this, OpenFileActivity.class), OPEN_FILE_ACTIVITY);
         } else {
             mDataCat.loadFile(savedInstanceState.getString(FILE_PATH));
             mCurrentPage = savedInstanceState.getInt(CURRENT_PAGE);
-            //TODO: show "loading" until file loads
-       }
+            showDialog(LOADING_DIALOG);
+        }
+
+        mDetector = new GestureDetector(this, new SimpleOnGestureListener(){
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                    float distanceY) {
+                mPage.scroll(distanceX, distanceY);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -86,14 +103,14 @@ public class MainActivity extends Activity implements DataCatListener{
     protected void onResume() {
         super.onResume();
     }
-
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Djvulibre.documentRelease();
         Djvulibre.contextRelease();
     }
-    
+
     @Override
     protected void onStop(){
         super.onStop();
@@ -154,6 +171,36 @@ public class MainActivity extends Activity implements DataCatListener{
                 }
             });
             return dialog;
+        case LOADING_DIALOG:
+            if (mLoadingDialog == null) {
+                mLoadingDialog = ProgressDialog.show(this, null, getString(R.string.loading), true);
+            }
+            return  mLoadingDialog;
+        case ERROR_DIALOG:
+            builder = new AlertDialog.Builder(this);
+            switch (mError){
+            case DataCatListener.ERROR_FILE_NOT_FOUND:
+                builder.setMessage(R.string.error_file_not_found);
+                break;
+            case DataCatListener.ERROR_FILE_NOT_OPENED:
+                builder.setMessage(R.string.error_file_not_opened);
+                break;
+            case DataCatListener.ERROR_NO_SUCH_PAGE:
+                builder.setMessage(R.string.error_no_such_page);
+                break;
+            case DataCatListener.ERROR_WRONG_FILE_FORMAT:
+                builder.setMessage(R.string.error_wrong_file_format);
+                break;
+            }
+            builder.setCancelable(false)
+                   .setTitle(R.string.error)
+                   .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                       public void onClick(DialogInterface dialog, int id) {
+                           startActivityForResult(new Intent(MainActivity.this,
+                                   OpenFileActivity.class), OPEN_FILE_ACTIVITY);
+                       }
+                   });
+            return builder.create();
         }
         return null;
     }
@@ -176,13 +223,22 @@ public class MainActivity extends Activity implements DataCatListener{
                         int first = path.lastIndexOf('/'), last = path.lastIndexOf('.');
                         name = path.substring(first + 1, last);
                     }
-                    Toast.makeText(this, name, 300).show();
+                    Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
                     mDbAdapter.create(name, path, 1);
                 }
+                showDialog(LOADING_DIALOG);
                 mDataCat.loadFile(path);
+            } else if (mFileInfo == null) {
+                Toast.makeText(this, R.string.should_select_file, Toast.LENGTH_LONG).show();
+                startActivityForResult(new Intent(this,OpenFileActivity.class), OPEN_FILE_ACTIVITY);
             }
             break;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mDetector.onTouchEvent(event);
     }
 
     private void loadPreferences(){
@@ -197,18 +253,41 @@ public class MainActivity extends Activity implements DataCatListener{
         } else {
             toolbar.setVisibility(View.GONE);
         }
-
-        double zoom = Double.parseDouble(sp.getString("zoom_coef", "0"));
-        if (zoom > 0) {
-            mZoomCoef = zoom;
-        }
-
-        mScreenHeight = mImage.getHeight();
-        mScreenWidth = mImage.getWidth();
+        mPage.loadPreferences(sp);
     }
 
+    public void onToolbarClick(View view){
+        switch (view.getId()){
+        case R.id.toolbar_zoom_down:
+            mPage.zoomOut();
+            break;
+        case R.id.toolbar_zoom_up:
+            mPage.zoomIn();
+            break;
+        case R.id.toolbar_prev:
+            if (mCurrentPage > 1 && mDataCat != null) {
+                mDataCat.getPage(mCurrentPage - 1);
+                --mCurrentPage;
+                showDialog(LOADING_DIALOG);
+            }
+            break;
+        case R.id.toolbar_next:
+            if (mCurrentPage < mFileInfo.pageTotal && mDataCat != null) {
+                mDataCat.getPage(mCurrentPage + 1);
+                ++mCurrentPage;
+                showDialog(LOADING_DIALOG);
+            }
+            break;
+        }
+    }
+
+    /*
+     * Methods for implementing DataCatListener
+     */
+
     public void takePage(Bitmap page) {
-        setPage(page);
+        mPage.setPage(page);
+        mLoadingDialog.dismiss();
         mPageToast.setText(mCurrentPage + "/" + mFileInfo.pageTotal);
         mPageToast.show();
     }
@@ -220,120 +299,14 @@ public class MainActivity extends Activity implements DataCatListener{
     }
 
     public void takeError(int errorDescription) {
-        //TODO: show error message and go to OpenFileActivity
-    }
-
-    public void onToolbarClick(View view){
-        switch (view.getId()){
-        case R.id.toolbar_zoom_down:
-            zoomDown();
-            break;
-        case R.id.toolbar_zoom_up:
-            zoomUp();
-            break;
-        case R.id.toolbar_prev:
-            if (mCurrentPage > 1 && mDataCat != null) {
-                mDataCat.getPage(mCurrentPage - 1);
-                --mCurrentPage;
-                //TODO: show "loading"
-            }
-            break;
-        case R.id.toolbar_next:
-            if (mCurrentPage < mFileInfo.pageTotal && mDataCat != null) {
-                mDataCat.getPage(mCurrentPage + 1);
-                ++mCurrentPage;
-                //TODO: show "loading"
-            }
-            break;
+        mError = errorDescription;
+        if (mLoadingDialog != null) {
+            mLoadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
+                public void onCancel(DialogInterface dialogInterface) {
+                    MainActivity.this.showDialog(ERROR_DIALOG);
+                }
+            });
+            mLoadingDialog.cancel();
         }
-    }
-
-    /*
-     * Fields and methods for work with bitmap
-     */
-    private double mZoomCoef = 2;           /* zoom coefficient for one click on zoom button */
-    private int mScreenWidth;               /* width of ImageView */
-    private int mScreenHeight;              /* height of ImageView */
-    private Bitmap mOriginalPage;           /* original bitmap for current page */
-    private int mLeft;                      /* leftmost displayed pixel in original bitmap */
-    private int mTop;                       /* topmost displayed pixel in original bitmap */
-    private int mOriginalWidth;             /* width of original bitmap */
-    private int mOriginalHeight;            /* height of original bitmap */
-    private int mCurrentWidth;              /* displayed width */
-    private int mCurrentHeight;             /* displayed height */
-    private double mCurrentZoom = 1;        /* zoom coefficient of displayed chunk of bitmap */
-    private ImageView mImage;
-
-    private void zoomUp() {
-        //TODO: соблюдение пропорций относительно размера ImageView
-        int xc = mLeft + mCurrentWidth / 2, yc = mTop + mCurrentHeight / 2;
-        mCurrentWidth = (int) (mCurrentWidth / mZoomCoef);
-        mCurrentHeight = (int) (mCurrentHeight / mZoomCoef);
-        mCurrentZoom /= mZoomCoef;
-        mLeft = xc - mCurrentWidth / 2;
-        mTop = yc - mCurrentHeight / 2;
-        setBitmap();
-    }
-
-    private void zoomDown() {
-        //TODO: соблюдение пропорций относительно размера ImageView
-        int xc = mLeft + mCurrentWidth / 2, yc = mTop + mCurrentHeight / 2;
-
-        mCurrentZoom *= mZoomCoef;
-        if (mCurrentZoom > 1) {
-            mCurrentZoom = 1;
-        }
-        mCurrentWidth = (int) (mCurrentWidth * mZoomCoef);
-        if (mCurrentWidth > mOriginalWidth) {
-            mCurrentWidth = mOriginalWidth;
-        }
-        mCurrentHeight = (int) (mCurrentHeight * mZoomCoef);
-        if (mCurrentHeight > mOriginalHeight) {
-            mCurrentHeight = mOriginalHeight;
-        }
-
-        if (xc - mCurrentWidth / 2 < 0) {
-            mLeft = 0;
-        } else if (xc + mCurrentWidth / 2 > mOriginalWidth) {
-            mLeft = mOriginalWidth - mCurrentWidth;
-        } else {
-            mLeft = xc - mCurrentWidth / 2;
-        }
-
-        if (yc - mCurrentHeight / 2 < 0) {
-            mTop = 0;
-        } else if (yc + mCurrentHeight / 2 > mOriginalHeight) {
-            mTop = mOriginalHeight - mCurrentHeight ;
-        } else {
-            mTop = yc - mCurrentHeight /2;
-        }
-        setBitmap();
-    }
-
-    /*
-     * Грузит страницу в том же приближении, что и предыдущая, но позиционирует ее в точке (0, 0)
-     */
-    private void setPage(Bitmap page) {
-        //TODO: соблюдение пропорций относительно размера ImageView
-        mOriginalPage = page;
-        mOriginalHeight = page.getHeight();
-        mOriginalWidth = page.getWidth();
-        mLeft = 0;
-        mTop = 0;
-        mCurrentWidth = (int) (mOriginalWidth * mCurrentZoom);
-        mCurrentHeight = (int) (mOriginalHeight * mCurrentZoom);
-        setBitmap();
-    }
-
-    /*
-     * Вырезает нужный кусок из mOriginalPage
-     */
-    private void setBitmap() {
-        int[] pixels = new int[mCurrentHeight * mCurrentWidth];
-        mOriginalPage.getPixels(pixels, 0, mCurrentWidth, mLeft, mTop, mCurrentWidth,
-                mCurrentHeight);
-        Bitmap page = Bitmap.createBitmap(pixels, mCurrentWidth, mCurrentHeight,
-                mOriginalPage.getConfig());
-        mImage.setImageBitmap(page);
     }
 }
