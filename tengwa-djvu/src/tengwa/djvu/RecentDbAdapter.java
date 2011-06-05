@@ -32,6 +32,12 @@ public class RecentDbAdapter {
 		mDbHelper.close();
 	}
 
+    public long create(String path, int page) {
+        int f = path.lastIndexOf('/'), l = path.lastIndexOf('.');
+        String name = path.substring(f + 1, l);
+        return create(name, path, page);
+    }
+
 	public long create(String name, String path, int page) {
         Cursor c = mDatabase.rawQuery(SELECT_ALL, null);
         int pathColumn = c.getColumnIndex(KEY_PATH);
@@ -62,9 +68,8 @@ public class RecentDbAdapter {
 	}
 
 	public Cursor fetchAll() {
-        //TODO: order by date descending
 		return mDatabase.query(TABLE_NAME, new String[] { KEY_ROWID, KEY_NAME, KEY_PATH, KEY_PAGE,
-                KEY_DATE }, null, null, null, null, null);
+                KEY_DATE }, null, null, null, null, KEY_DATE + " DESC");
 	}
 
 	public Cursor fetch(long rowId) throws SQLException {
