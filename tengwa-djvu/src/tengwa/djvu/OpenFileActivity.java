@@ -58,6 +58,7 @@ public class OpenFileActivity extends Activity {
     @Override
     public void onStop(){
         mRecentCursor.close();
+        mDbAdapter.close();
         super.onStop();
     }
 

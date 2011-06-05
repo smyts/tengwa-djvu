@@ -34,7 +34,7 @@ public class DataCatStub extends DataCatBase{
             mListener.takeError(DataCatListener.ERROR_FILE_NOT_OPENED);
         } else if (page > 0 && page <= pageTotal){
             mPage = page;
-            //TODO: this is bad code, but i'm sure that mListener will be MainActivity ;)
+            //this is a bad code, but it is a stub and i'm sure that mListener will be MainActivity
             new LoadPageTask((Context) mListener).execute(page); //loading page in another thread
         } else {
             mListener.takeError(DataCatListener.ERROR_NO_SUCH_PAGE);

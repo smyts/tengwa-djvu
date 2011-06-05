@@ -6,13 +6,16 @@
     <uses-sdk android:targetSdkVersion="8" />
     <application android:label="TengwaDjvu">
         <activity android:name="MainActivity"
+                  android:configChanges="orientation"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity"/>
-        <activity android:name=".OpenFileActivity"/>
+        <activity android:name=".SettingsActivity"
+                  android:configChanges="orientation"/>
+        <activity android:name=".OpenFileActivity"
+                  android:configChanges="orientation"/>
     </application>
 </manifest> 

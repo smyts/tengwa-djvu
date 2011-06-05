@@ -1,25 +1,28 @@
 package tengwa.djvu;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.*;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.*;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.Formatter;
 
 public class MainActivity extends Activity implements DataCatListener{
-    public static final int GO_TO_DIALOG = 0;
-    public static final int ABOUT_DIALOG = 1;
-    public static final int SETTINGS_ACTIVITY = 2;
-    public static final int OPEN_FILE_ACTIVITY = 3;
+    public static final int GO_TO_DIALOG = 1;
+    public static final int ABOUT_DIALOG = 2;
+    public static final int LOADING_DIALOG = 3;
+    public static final int ERROR_DIALOG = 4;
+
+    public static final int SETTINGS_ACTIVITY = 10;
+    public static final int OPEN_FILE_ACTIVITY = 11;
 
     private static final String FILE_PATH = "file path";
     private static final String CURRENT_PAGE = "current page";
@@ -28,7 +31,27 @@ public class MainActivity extends Activity implements DataCatListener{
     private DataCatBase mDataCat;
     private int mCurrentPage;
     private FileInfo mFileInfo;
+    private int mError;
+
     private Toast mPageToast;
+    private Dialog mLoadingDialog;
+
+    /*
+     * Fields for work with bitmap
+     */
+    private double mZoomCoef = 2;           /* zoom coefficient for one click on zoom button */
+    private int mScreenWidth;               /* width of ImageView */
+    private int mScreenHeight;              /* height of ImageView */
+    private Bitmap mOriginalPage;           /* original bitmap for current page */
+    private int mLeft;                      /* leftmost displayed pixel in original bitmap */
+    private int mTop;                       /* topmost displayed pixel in original bitmap */
+    private int mOriginalWidth;             /* width of original bitmap */
+    private int mOriginalHeight;            /* height of original bitmap */
+    private int mCurrentWidth;              /* displayed width */
+    private int mCurrentHeight;             /* displayed height */
+    private double mCurrentZoom = 1;        /* zoom coefficient of displayed chunk of bitmap */
+    private ImageView mImage;
+    private GestureDetector mDetector;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -38,7 +61,9 @@ public class MainActivity extends Activity implements DataCatListener{
 
         mPageToast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         mPageToast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
+
         mImage = (ImageView) findViewById(R.id.doc_view);
+        mImage.setImageDrawable(getResources().getDrawable(R.drawable.gray_background));
 
         loadPreferences();
 
@@ -60,8 +85,17 @@ public class MainActivity extends Activity implements DataCatListener{
         } else {
             mDataCat.loadFile(savedInstanceState.getString(FILE_PATH));
             mCurrentPage = savedInstanceState.getInt(CURRENT_PAGE);
-            //TODO: show "loading" until file loads
-       }
+            showDialog(LOADING_DIALOG);
+        }
+
+        mDetector = new GestureDetector(this, new SimpleOnGestureListener(){
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                    float distanceY) {
+                scroll(distanceX, distanceY);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -82,6 +116,11 @@ public class MainActivity extends Activity implements DataCatListener{
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
     }
 
     @Override
@@ -139,6 +178,36 @@ public class MainActivity extends Activity implements DataCatListener{
                 }
             });
             return dialog;
+        case LOADING_DIALOG:
+            if (mLoadingDialog == null) {
+                mLoadingDialog = ProgressDialog.show(this, null, getString(R.string.loading), true);
+            }
+            return  mLoadingDialog;
+        case ERROR_DIALOG:
+            builder = new AlertDialog.Builder(this);
+            switch (mError){
+            case DataCatListener.ERROR_FILE_NOT_FOUND:
+                builder.setMessage(R.string.error_file_not_found);
+                break;
+            case DataCatListener.ERROR_FILE_NOT_OPENED:
+                builder.setMessage(R.string.error_file_not_opened);
+                break;
+            case DataCatListener.ERROR_NO_SUCH_PAGE:
+                builder.setMessage(R.string.error_no_such_page);
+                break;
+            case DataCatListener.ERROR_WRONG_FILE_FORMAT:
+                builder.setMessage(R.string.error_wrong_file_format);
+                break;
+            }
+            builder.setCancelable(false)
+                   .setTitle(R.string.error)
+                   .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                       public void onClick(DialogInterface dialog, int id) {
+                           startActivityForResult(new Intent(MainActivity.this,
+                                   OpenFileActivity.class), OPEN_FILE_ACTIVITY);
+                       }
+                   });
+            return builder.create();
         }
         return null;
     }
@@ -161,13 +230,29 @@ public class MainActivity extends Activity implements DataCatListener{
                         int first = path.lastIndexOf('/'), last = path.lastIndexOf('.');
                         name = path.substring(first + 1, last);
                     }
-                    Toast.makeText(this, name, 300).show();
+                    Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
                     mDbAdapter.create(name, path, 1);
                 }
+                showDialog(LOADING_DIALOG);
                 mDataCat.loadFile(path);
+            } else {
+                Toast.makeText(this, R.string.should_select_file, Toast.LENGTH_LONG).show();
+                startActivityForResult(new Intent(this,OpenFileActivity.class), OPEN_FILE_ACTIVITY);
             }
             break;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mDetector.onTouchEvent(event);
+    }
+
+    @Override
+    public void onConfigurationChanged (Configuration newConfig) {
+        mScreenHeight = mImage.getHeight();
+        mScreenWidth = mImage.getWidth();
+        fitPage();
     }
 
     private void loadPreferences(){
@@ -183,14 +268,44 @@ public class MainActivity extends Activity implements DataCatListener{
             toolbar.setVisibility(View.GONE);
         }
 
-        double zoom = Double.parseDouble(sp.getString("zoom_coef", "0"));
+        double zoom = Double.parseDouble(sp.getString("zoom_coef", "2"));
         if (zoom > 0) {
             mZoomCoef = zoom;
+        } else {
+            SharedPreferences.Editor e = sp.edit();
+            e.putString("zoom_coef", Double.toString(mZoomCoef));
+            e.commit();
         }
-
-        mScreenHeight = mImage.getHeight();
-        mScreenWidth = mImage.getWidth();
     }
+
+    public void onToolbarClick(View view){
+        switch (view.getId()){
+        case R.id.toolbar_zoom_down:
+            zoomOut();
+            break;
+        case R.id.toolbar_zoom_up:
+            zoomIn();
+            break;
+        case R.id.toolbar_prev:
+            if (mCurrentPage > 1 && mDataCat != null) {
+                mDataCat.getPage(mCurrentPage - 1);
+                --mCurrentPage;
+                showDialog(LOADING_DIALOG);
+            }
+            break;
+        case R.id.toolbar_next:
+            if (mCurrentPage < mFileInfo.pageTotal && mDataCat != null) {
+                mDataCat.getPage(mCurrentPage + 1);
+                ++mCurrentPage;
+                showDialog(LOADING_DIALOG);
+            }
+            break;
+        }
+    }
+
+    /*
+     * Methods for implementing DataCatListener
+     */
 
     public void takePage(Bitmap page) {
         setPage(page);
@@ -205,101 +320,138 @@ public class MainActivity extends Activity implements DataCatListener{
     }
 
     public void takeError(int errorDescription) {
-        //TODO: show error message and go to OpenFileActivity
-    }
-
-    public void onToolbarClick(View view){
-        switch (view.getId()){
-        case R.id.toolbar_zoom_down:
-            zoomDown();
-            break;
-        case R.id.toolbar_zoom_up:
-            zoomUp();
-            break;
-        case R.id.toolbar_prev:
-            if (mCurrentPage > 1 && mDataCat != null) {
-                mDataCat.getPage(mCurrentPage - 1);
-                --mCurrentPage;
-                //TODO: show "loading"
-            }
-            break;
-        case R.id.toolbar_next:
-            if (mCurrentPage < mFileInfo.pageTotal && mDataCat != null) {
-                mDataCat.getPage(mCurrentPage + 1);
-                ++mCurrentPage;
-                //TODO: show "loading"
-            }
-            break;
+        mError = errorDescription;
+        if (mLoadingDialog != null) {
+            mLoadingDialog.setOnCancelListener(new DialogInterface.OnCancelListener(){
+                public void onCancel(DialogInterface dialogInterface) {
+                    MainActivity.this.showDialog(ERROR_DIALOG);
+                }
+            });
+            mLoadingDialog.cancel();
         }
     }
 
     /*
-     * Fields and methods for work with bitmap
+     * Fields for work with bitmap
      */
-    private double mZoomCoef = 2;           /* zoom coefficient for one click on zoom button */
-    private int mScreenWidth;               /* width of ImageView */
-    private int mScreenHeight;              /* height of ImageView */
-    private Bitmap mOriginalPage;           /* original bitmap for current page */
-    private int mLeft;                      /* leftmost displayed pixel in original bitmap */
-    private int mTop;                       /* topmost displayed pixel in original bitmap */
-    private int mOriginalWidth;             /* width of original bitmap */
-    private int mOriginalHeight;            /* height of original bitmap */
-    private int mCurrentWidth;              /* displayed width */
-    private int mCurrentHeight;             /* displayed height */
-    private double mCurrentZoom = 1;        /* zoom coefficient of displayed chunk of bitmap */
-    private ImageView mImage;
 
-    private void zoomUp() {
-        //TODO: соблюдение пропорций относительно размера ImageView
-        int xc = mLeft + mCurrentWidth / 2, yc = mTop + mCurrentHeight / 2;
-        mCurrentWidth = (int) (mCurrentWidth / mZoomCoef);
-        mCurrentHeight = (int) (mCurrentHeight / mZoomCoef);
-        mCurrentZoom /= mZoomCoef;
-        mLeft = xc - mCurrentWidth / 2;
-        mTop = yc - mCurrentHeight / 2;
-        setBitmap();
+    private void zoomIn() {
+        if (mCurrentZoom > 1) {
+            mCurrentWidth = mOriginalWidth;
+            mCurrentHeight = mOriginalHeight;
+            mLeft = mTop = 0;
+            mCurrentZoom = 1;
+        } else {
+            int width = mCurrentWidth, height = mCurrentHeight;
+            mCurrentZoom /= mZoomCoef;
+            int xc = mLeft + width / 2, yc = mTop + height / 2;
+            width = (int) (width / mZoomCoef);
+            height = (int) (height / mZoomCoef);
+            if (width == 0 || height == 0){
+                return;
+            }
+            mLeft = xc - width / 2;
+            mTop = yc - height / 2;
+            mCurrentWidth = width;
+            mCurrentHeight = height;
+        }
+        fitPage();
+        updateImage();
     }
 
-    private void zoomDown() {
-        //TODO: соблюдение пропорций относительно размера ImageView
+    private void zoomOut() {
+        if (mCurrentZoom > 1) {
+            return;
+        }
+
         int xc = mLeft + mCurrentWidth / 2, yc = mTop + mCurrentHeight / 2;
 
         mCurrentZoom *= mZoomCoef;
+
         if (mCurrentZoom > 1) {
-            mCurrentZoom = 1;
-        }
-        mCurrentWidth = (int) (mCurrentWidth * mZoomCoef);
-        if (mCurrentWidth > mOriginalWidth) {
+            //zoom > 1 means showing whole page without fitting to page
             mCurrentWidth = mOriginalWidth;
-        }
-        mCurrentHeight = (int) (mCurrentHeight * mZoomCoef);
-        if (mCurrentHeight > mOriginalHeight) {
             mCurrentHeight = mOriginalHeight;
+            mLeft = mTop = 0;
+        } else {
+            mCurrentWidth = (int) (mCurrentWidth * mZoomCoef);
+            if (mCurrentWidth > mOriginalWidth) {
+                mCurrentWidth = mOriginalWidth;
+            }
+            mCurrentHeight = (int) (mCurrentHeight * mZoomCoef);
+            if (mCurrentHeight > mOriginalHeight) {
+                mCurrentHeight = mOriginalHeight;
+            }
+
+            if (xc - mCurrentWidth / 2 < 0) {
+                mLeft = 0;
+            } else if (xc + mCurrentWidth / 2 > mOriginalWidth) {
+                mLeft = mOriginalWidth - mCurrentWidth;
+            } else {
+                mLeft = xc - mCurrentWidth / 2;
+            }
+
+            if (yc - mCurrentHeight / 2 < 0) {
+                mTop = 0;
+            } else if (yc + mCurrentHeight / 2 > mOriginalHeight) {
+                mTop = mOriginalHeight - mCurrentHeight ;
+            } else {
+                mTop = yc - mCurrentHeight /2;
+            }
         }
 
-        if (xc - mCurrentWidth / 2 < 0) {
-            mLeft = 0;
-        } else if (xc + mCurrentWidth / 2 > mOriginalWidth) {
+        fitPage();
+        updateImage();
+    }
+
+    private void scroll(double distanceX, double distanceY) {
+        int dx = (int) distanceX, dy = (int) distanceY;
+        if (dx == 0 && dy == 0) {
+            return;
+        }
+        if (mLeft + mCurrentWidth + dx > mOriginalWidth) {
             mLeft = mOriginalWidth - mCurrentWidth;
+        } else if (mLeft + dx < 0) {
+            mLeft = 0;
         } else {
-            mLeft = xc - mCurrentWidth / 2;
+            mLeft += dx;
         }
-
-        if (yc - mCurrentHeight / 2 < 0) {
+        if (mTop + mCurrentHeight + dy > mOriginalHeight) {
+            mTop = mOriginalHeight - mCurrentHeight;
+        } else if (mTop + dy < 0) {
             mTop = 0;
-        } else if (yc + mCurrentHeight / 2 > mOriginalHeight) {
-            mTop = mOriginalHeight - mCurrentHeight ;
         } else {
-            mTop = yc - mCurrentHeight /2;
+            mTop += dy;
         }
-        setBitmap();
+        updateImage();
+    }
+
+    private void fitPage(){
+        //TODO: replace magic constant with some documentation
+        //zoom > 1 means showing whole page without fitting to page
+        if (mCurrentZoom <= 1 ) {
+            if (Math.abs(mCurrentWidth * mScreenHeight - mCurrentHeight * mScreenWidth) > 100) {
+                int width = (int) (mOriginalWidth * mCurrentZoom),
+                        height = (int) (mOriginalHeight * mCurrentZoom);
+                if (width * mScreenHeight < height * mScreenWidth) {
+                    height = width * mScreenHeight / mScreenWidth;
+                } else {
+                    width = height * mScreenWidth / mScreenHeight;
+                }
+                mCurrentWidth = width;
+                mCurrentHeight = height;
+            }
+        } else {
+            mCurrentWidth = mOriginalWidth;
+            mCurrentHeight = mOriginalHeight;
+            mLeft = mTop = 0;
+        }
     }
 
     /*
      * Грузит страницу в том же приближении, что и предыдущая, но позиционирует ее в точке (0, 0)
      */
     private void setPage(Bitmap page) {
-        //TODO: соблюдение пропорций относительно размера ImageView
         mOriginalPage = page;
         mOriginalHeight = page.getHeight();
         mOriginalWidth = page.getWidth();
@@ -307,13 +459,17 @@ public class MainActivity extends Activity implements DataCatListener{
         mTop = 0;
         mCurrentWidth = (int) (mOriginalWidth * mCurrentZoom);
         mCurrentHeight = (int) (mOriginalHeight * mCurrentZoom);
-        setBitmap();
+        mScreenHeight = mImage.getHeight();
+        mScreenWidth = mImage.getWidth();
+        fitPage();
+        updateImage();
+        mLoadingDialog.dismiss();
     }
 
     /*
      * Вырезает нужный кусок из mOriginalPage
      */
-    private void setBitmap() {
+    private void updateImage() {
         int[] pixels = new int[mCurrentHeight * mCurrentWidth];
         mOriginalPage.getPixels(pixels, 0, mCurrentWidth, mLeft, mTop, mCurrentWidth,
                 mCurrentHeight);

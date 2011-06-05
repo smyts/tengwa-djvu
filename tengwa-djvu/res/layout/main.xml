@@ -22,7 +22,7 @@
                      android:layout_width="fill_parent"
                      android:layout_height="wrap_content"
                      android:layout_weight="1"
-                     android:src="@drawable/zoom_down"
+                     android:src="@drawable/zoom_out"
                      android:onClick="onToolbarClick"
                      />
         <ImageButton android:id="@+id/toolbar_prev"
@@ -43,7 +43,7 @@
                      android:layout_width="fill_parent"
                      android:layout_height="wrap_content"
                      android:layout_weight="1"
-                     android:src="@drawable/zoom_up"
+                     android:src="@drawable/zoom_in"
                      android:onClick="onToolbarClick"
                      />
     </LinearLayout>
