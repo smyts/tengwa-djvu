@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -58,6 +60,7 @@ public class OpenFileActivity extends Activity {
     @Override
     public void onStop(){
         mRecentCursor.close();
+        mDbAdapter.close();
         super.onStop();
     }
 

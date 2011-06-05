@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Tengwa Djvu</string>
 
-    <!--All-purpose strings-->
+    <!-- All-purpose strings -->
     <string name="open">Open</string>
     <string name="go_to">Go to</string>
     <string name="settings">Settings</string>
@@ -15,8 +15,18 @@
     <string name="recent">Recent</string>
     <string name="toolbar_on">Navigation toolbar on</string>
     <string name="browse_files">Browse files</string>
+    <string name="error">Error</string>
+
+    <!-- Messages -->
     <string name="go_to_header" formatted="false">Current page %d of %d</string>
     <string name="zoom_coef">Zoom coefficient</string>
+    <string name="zoom_coef_limitation">Zoom coefficient must be greater than 1</string>
+    <string name="should_select_file">You should select file</string>
+    <string name="loading">Loading...</string>
+    <string name="error_file_not_found">File not found</string>
+    <string name="error_wrong_file_format">Wrong file format</string>
+    <string name="error_no_such_page">No such page to load</string>
+    <string name="error_file_not_opened">File not opened</string>
 
     <!--Text stubs-->
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur

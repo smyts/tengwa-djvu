@@ -89,6 +89,11 @@ public class MainActivity extends Activity implements DataCatListener{
         Djvulibre.documentRelease();
         Djvulibre.contextRelease();
     }
+    
+    @Override
+    protected void onStop(){
+        super.onStop();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){

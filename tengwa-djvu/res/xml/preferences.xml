@@ -9,6 +9,7 @@
     <EditTextPreference android:key="zoom_coef"
                         android:title="@string/zoom_coef"
                         android:dialogTitle="@string/zoom_coef"
+                        android:dialogMessage="@string/zoom_coef_limitation"
                         android:numeric="decimal"
                         android:defaultValue="2" />
 

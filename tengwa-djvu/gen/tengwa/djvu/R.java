@@ -12,20 +12,21 @@ public final class R {
     }
     public static final class drawable {
         public static final int fight=0x7f020000;
-        public static final int icon=0x7f020001;
-        public static final int lion=0x7f020002;
-        public static final int menu_about=0x7f020003;
-        public static final int menu_goto=0x7f020004;
-        public static final int menu_open=0x7f020005;
-        public static final int menu_settings=0x7f020006;
-        public static final int samurai=0x7f020007;
-        public static final int toolbar_end=0x7f020008;
-        public static final int toolbar_home=0x7f020009;
-        public static final int toolbar_next=0x7f02000a;
-        public static final int toolbar_prev=0x7f02000b;
-        public static final int zoom_down=0x7f02000c;
-        public static final int zoom_up=0x7f02000d;
-        public static final int zzz=0x7f02000e;
+        public static final int gray_background=0x7f020001;
+        public static final int icon=0x7f020002;
+        public static final int lion=0x7f020003;
+        public static final int menu_about=0x7f020004;
+        public static final int menu_goto=0x7f020005;
+        public static final int menu_open=0x7f020006;
+        public static final int menu_settings=0x7f020007;
+        public static final int samurai=0x7f020008;
+        public static final int toolbar_end=0x7f020009;
+        public static final int toolbar_home=0x7f02000a;
+        public static final int toolbar_next=0x7f02000b;
+        public static final int toolbar_prev=0x7f02000c;
+        public static final int zoom_in=0x7f02000d;
+        public static final int zoom_out=0x7f02000e;
+        public static final int zzz=0x7f02000f;
     }
     public static final class id {
         public static final int browse_button=0x7f070009;
@@ -58,27 +59,37 @@ public final class R {
     }
     public static final class string {
         public static final int about=0x7f050004;
-        public static final int about_text=0x7f050010;
+        public static final int about_text=0x7f050018;
         public static final int app_name=0x7f050000;
         public static final int browse_files=0x7f05000c;
         public static final int end=0x7f050006;
+        public static final int error=0x7f05000d;
+        public static final int error_file_not_found=0x7f050013;
+        public static final int error_file_not_opened=0x7f050016;
+        public static final int error_no_such_page=0x7f050015;
+        public static final int error_wrong_file_format=0x7f050014;
         public static final int go_to=0x7f050002;
-        public static final int go_to_header=0x7f05000d;
+        /**  Messages 
+         */
+        public static final int go_to_header=0x7f05000e;
         public static final int home=0x7f050005;
+        public static final int loading=0x7f050012;
         /** Text stubs
          */
-        public static final int lorem_ipsum=0x7f05000f;
+        public static final int lorem_ipsum=0x7f050017;
         public static final int next=0x7f050008;
-        public static final int note_for_file_browsing=0x7f050011;
+        public static final int note_for_file_browsing=0x7f050019;
         public static final int ok=0x7f050009;
-        /** All-purpose strings
+        /**  All-purpose strings 
          */
         public static final int open=0x7f050001;
         public static final int previous=0x7f050007;
         public static final int recent=0x7f05000a;
         public static final int settings=0x7f050003;
+        public static final int should_select_file=0x7f050011;
         public static final int toolbar_on=0x7f05000b;
-        public static final int zoom_coef=0x7f05000e;
+        public static final int zoom_coef=0x7f05000f;
+        public static final int zoom_coef_limitation=0x7f050010;
     }
     public static final class xml {
         public static final int preferences=0x7f040000;

@@ -46,7 +46,7 @@ public class Djvulibre {
     public static int lastMessage;
 
     /*
-     * Callback objects to notify
+     * Callback objects to notify, set it manually for now
      */
     public static DjvulibreErrorCallback errorCall;
 
