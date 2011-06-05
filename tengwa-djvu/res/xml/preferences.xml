@@ -6,10 +6,10 @@
                         android:title="@string/toolbar_on"
                         android:defaultValue="true" />
 
-    <EditTextPreference android:key="zoom_coef"
-                        android:title="@string/zoom_coef"
-                        android:dialogTitle="@string/zoom_coef"
-                        android:dialogMessage="@string/zoom_coef_limitation"
+    <EditTextPreference android:key="zoom_factor"
+                        android:title="@string/zoom_factor"
+                        android:dialogTitle="@string/zoom_factor"
+                        android:dialogMessage="@string/zoom_factor_limitation"
                         android:numeric="decimal"
                         android:defaultValue="2" />
 

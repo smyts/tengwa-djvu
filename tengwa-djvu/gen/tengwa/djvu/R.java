@@ -88,8 +88,8 @@ public final class R {
         public static final int settings=0x7f050003;
         public static final int should_select_file=0x7f050011;
         public static final int toolbar_on=0x7f05000b;
-        public static final int zoom_coef=0x7f05000f;
-        public static final int zoom_coef_limitation=0x7f050010;
+        public static final int zoom_factor=0x7f05000f;
+        public static final int zoom_factor_limitation=0x7f050010;
     }
     public static final class xml {
         public static final int preferences=0x7f040000;

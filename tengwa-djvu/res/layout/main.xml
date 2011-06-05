@@ -7,11 +7,12 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <ImageView android:id="@+id/doc_view"
-               android:layout_width="fill_parent"
-               android:layout_height="fill_parent"
-               android:layout_weight="1"
-               />
+
+    <tengwa.djvu.PageView android:id="@+id/doc_view"
+                          android:layout_width="fill_parent"
+                          android:layout_height="fill_parent"
+                          android:layout_weight="1"
+                          />
 
     <LinearLayout android:id="@+id/toolbar"
                   android:layout_width="fill_parent"
