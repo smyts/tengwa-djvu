@@ -56,12 +56,6 @@ public class MainActivity extends Activity implements DataCatListener{
         mDbAdapter = new RecentDbAdapter(getApplicationContext());
         mDbAdapter.open();
 
-        Djvulibre.contextCreate();
-        int cachesize = Djvulibre.cacheGetSize();
-        Djvulibre.cacheSetSize(5 * (1 << 20));
-        Djvulibre.cacheClear();
-        Djvulibre.contextRelease();
-
         //TODO: replace DataCatStub with real implementation
         mDataCat = new DataCatStub();
         mDataCat.bind(this);

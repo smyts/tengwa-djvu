@@ -27,7 +27,6 @@ public class DataCatStub extends DataCatBase{
         }
         Djvulibre.documentRelease();
         Djvulibre.documentCreate(file);
-        Djvulibre.handleDjvuMessages();
     }
 
     @Override
@@ -79,6 +78,11 @@ public class DataCatStub extends DataCatBase{
 
     @Override
     public void signalRedisplay(int redisplayDescription) {
+        // do smth
+    }
+
+    @Override
+    public void signalHandle() {
         // do smth
     }
 

@@ -6,6 +6,7 @@
 
 package tengwa.djvu;
 
+
 public class Djvulibre {
      /*
       * Initial size of the message arrays
@@ -15,10 +16,12 @@ public class Djvulibre {
 
     static {
         System.loadLibrary("djvulibre-native");
-        messageTypes = new int[MESSAGES_LENGTH];
-        messageArguments = new Object[MESSAGES_LENGTH];
-        lastMessage = -1;
+        sMessageTypes = new int[MESSAGES_LENGTH];
+        sMessageArguments = new Object[MESSAGES_LENGTH];
+        sLastMessage = -1;
         errorCall = null;
+        sLastPage = -1;
+        sLastPageObj = -1;
     }
 
     /*
@@ -37,6 +40,17 @@ public class Djvulibre {
     public static final int MESSAGE_TYPE_PROGRESS = 9;
 
     /*
+     * DDJVU job types (correspond to the ones at the native
+     * implementation)
+     */
+    public static final int JOB_NOTSTARTED = 0;
+    public static final int JOB_STARTED = 1;
+    public static final int JOB_OK = 2;
+    public static final int JOB_FAILED = 3;
+    public static final int JOB_STOPPED = 4;
+
+
+    /*
      * errorDescription, docinfoDescription and etc. types
      */
     // TODO: add these types explicitly
@@ -46,9 +60,23 @@ public class Djvulibre {
      * to handle,the second one contains argument(s) for that particular message.
      * lastMessage is and index of the latest unhandled message.
      */
-    public static int[] messageTypes;
-    public static Object[] messageArguments;
-    public static int lastMessage;
+    public static int[] sMessageTypes;
+    public static Object[] sMessageArguments;
+    public static int sLastMessage;
+
+    /*
+     * Application-level cache of pages
+     * (currently consists only of the latest page)
+     *
+     */
+
+    public static int sLastPage;
+    public static long sLastPageObj;
+
+    // TODO: decision on application-level cache
+    //public static int sMaxPreservedPages = 10;
+    //public static Queue<Integer> sOrderQueue;
+    //public static HashMap<Integer, Long> sPagesCache;
 
     /*
      * Callback objects to notify, set it manually for now
@@ -65,13 +93,14 @@ public class Djvulibre {
     static native void cacheClear();
     static native int documentCreate(String filepath);
     static native void documentRelease();
-    static native void handleDjvuMessages();
+    static native void handleDjvuMessages(int wait);
+    static native int getPagenum();
+    static native long pageCreateByPageno(int pageno);
+    static native void pageRelease(long pageobj);
 
     public static void handleMessages() {
-        handleDjvuMessages();
-
-        for (int curId = 0; curId <= lastMessage; ++curId) {
-            switch (messageTypes[curId]) {
+        for (int curId = 0; curId <= sLastMessage; ++curId) {
+            switch (sMessageTypes[curId]) {
                 case MESSAGE_TYPE_ERROR:
                     if (errorCall != null)
                         errorCall.signalError(0);
@@ -99,27 +128,46 @@ public class Djvulibre {
             }
         }
 
-        lastMessage = -1;
+        sLastMessage = -1;
+    }
+
+    static void getPage(int pageno) {
+        if (sLastPage != pageno) {
+            Djvulibre.pageRelease(sLastPageObj);
+            sLastPage = pageno;
+            sLastPageObj = Djvulibre.pageCreateByPageno(pageno);
+        }
     }
 
     static void checkResize(int lastMessage) {
-        if (lastMessage == messageTypes.length) {
+        if (lastMessage == sMessageTypes.length) {
             int[] newIntArr = new int[lastMessage * 2];
-            System.arraycopy(messageTypes, 0, newIntArr, 0, lastMessage * 2);
-            messageTypes = newIntArr;
+            System.arraycopy(sMessageTypes, 0, newIntArr, 0, lastMessage * 2);
+            sMessageTypes = newIntArr;
 
             Object[] newObjArr = new Object[lastMessage * 2];
-            System.arraycopy(messageArguments, 0, newObjArr, 0, lastMessage * 2);
-            messageArguments = newObjArr;
+            System.arraycopy(sMessageArguments, 0, newObjArr, 0, lastMessage * 2);
+            sMessageArguments = newObjArr;
         }
     }
 
     public static void handleDdjvuDocinfo(int status) {
-        ++lastMessage;
-        checkResize(lastMessage);
-        messageTypes[lastMessage] = MESSAGE_TYPE_DOCINFO;
-        messageArguments[lastMessage] = (Object) status;
+        ++sLastMessage;
+        checkResize(sLastMessage);
+        sMessageTypes[sLastMessage] = MESSAGE_TYPE_DOCINFO;
+        sMessageArguments[sLastMessage] = (Object) status;
     }
+
+    public static void handleDdjvuPageinfo(int status) {
+        ++sLastMessage;
+        checkResize(sLastMessage);
+        sMessageTypes[sLastMessage] = MESSAGE_TYPE_PAGEINFO;
+        sMessageArguments[sLastMessage] = (Object) status;
+    }
+}
+
+interface DjvulibreHandleCallback {
+    void signalHandle();
 }
 
 interface DjvulibreErrorCallback {

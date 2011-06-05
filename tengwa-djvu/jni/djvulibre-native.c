@@ -94,12 +94,15 @@ void Java_tengwa_djvu_Djvulibre_cacheClear (JNIEnv *env, jobject this) {
     }
 }
 
-void Java_tengwa_djvu_Djvulibre_handleDjvuMessages (JNIEnv *env, jclass cls) {
+void Java_tengwa_djvu_Djvulibre_handleDjvuMessages (JNIEnv *env, jclass cls, jint wait) {
     __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
                         "Handling ddjvu messages");
     const ddjvu_message_t *msg;
     jmethodID mid;
     jint status;
+
+    if (wait)
+        ddjvu_message_wait (main_context);
 
     while ((msg = ddjvu_message_peek (main_context))) {
         switch (msg->m_any.tag) {
@@ -129,8 +132,15 @@ void Java_tengwa_djvu_Djvulibre_handleDjvuMessages (JNIEnv *env, jclass cls) {
                      
             break;
         case DDJVU_PAGEINFO:
-            __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
-                                 "DDJVU_PAGEINFO");
+            mid = (*env)->GetStaticMethodID (env, cls, "handleDdjvuPageinfo", "(I)V");
+            status = (jint)ddjvu_document_decoding_status (main_document);
+
+            __android_log_print (ANDROID_LOG_INFO, LOG_TAG,
+                                 "DDJVU_PAGEINFO:\nstatus %s", status);
+
+            (*env)->CallStaticVoidMethod (env, cls, mid, status);
+
+
             break;
         case DDJVU_RELAYOUT:
             __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
@@ -162,12 +172,6 @@ void Java_tengwa_djvu_Djvulibre_handleDjvuMessages (JNIEnv *env, jclass cls) {
     __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
                          "Ddjvu messages were handled");
 }
-
-// TODO: Message callback setting ??
-//
-//
-/////////////////////////////////////
-
 
 
 jint Java_tengwa_djvu_Djvulibre_documentCreate \
@@ -227,6 +231,23 @@ void Java_tengwa_djvu_Djvulibre_documentRelease (JNIEnv *env, jobject this) {
     }
 }
 
-// document decoding status (status of header) ??
-//
-////////////////////////////////////////////////
+jint Java_tengwa_djvu_Djvulibre_getPagenum (JNIEnv *env, jobject this) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Recieving number of pages...");
+    return (jint) ddjvu_document_get_pagenum (main_document);
+}
+
+jlong Java_tengwa_djvu_Djvulibre_pageCreateByPagneno (JNIEnv *env, jobject this, 
+                                                     jint pageno) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Creating page by pageno...");
+    
+    return (jlong) ddjvu_page_create_by_pageno (main_document, pageno);
+}
+
+void Java_tengwa_djvu_Djvulibre_pageRelease (JNIEnv *env, jobject this,
+                                                 jlong pageobj) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Releasing page...");
+    ddjvu_page_release ((ddjvu_page_t*) pageobj);
+}

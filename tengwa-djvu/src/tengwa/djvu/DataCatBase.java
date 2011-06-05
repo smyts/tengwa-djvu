@@ -1,7 +1,7 @@
 package tengwa.djvu;
 
 public abstract class DataCatBase implements DjvulibreErrorCallback, DjvulibreDocinfoCallback,
-        DjvulibrePageinfoCallback, DjvulibreRedisplayCallback {
+        DjvulibrePageinfoCallback, DjvulibreRedisplayCallback, DjvulibreHandleCallback {
     protected DataCatListener mListener;
 
     public void bind(DataCatListener listener){
@@ -18,4 +18,5 @@ public abstract class DataCatBase implements DjvulibreErrorCallback, DjvulibreDo
     public abstract void signalDocinfo(int docinfoDescription);
     public abstract void signalPageinfo(int pageinfoDescription);
     public abstract void signalRedisplay(int redisplayDescription);
+    public abstract void signalHandle();
 }
