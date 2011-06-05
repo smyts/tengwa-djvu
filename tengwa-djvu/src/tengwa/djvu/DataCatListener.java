@@ -2,7 +2,7 @@ package tengwa.djvu;
 
 import android.graphics.Bitmap;
 
-public interface DataCatListener extends DjvulibreErrorCallback {
+public interface DataCatListener {
     public static final int ERROR_GENERAL = 0;
     public static final int ERROR_FILE_NOT_FOUND = 1;
     public static final int ERROR_WRONG_FILE_FORMAT = 2;

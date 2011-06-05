@@ -37,6 +37,11 @@ public class Djvulibre {
     public static final int MESSAGE_TYPE_PROGRESS = 9;
 
     /*
+     * errorDescription, docinfoDescription and etc. types
+     */
+    // TODO: add these types explicitly
+
+    /*
      * Two arrays, the first one contains DDJVU message type for a message
      * to handle,the second one contains argument(s) for that particular message.
      * lastMessage is and index of the latest unhandled message.
@@ -49,6 +54,9 @@ public class Djvulibre {
      * Callback objects to notify, set it manually for now
      */
     public static DjvulibreErrorCallback errorCall;
+    public static DjvulibreDocinfoCallback docinfoCall;
+    public static DjvulibrePageinfoCallback pageinfoCall;
+    public static DjvulibreRedisplayCallback redisplayCall;
 
     static native void contextCreate();
     static native void contextRelease();
@@ -66,7 +74,7 @@ public class Djvulibre {
             switch (messageTypes[curId]) {
                 case MESSAGE_TYPE_ERROR:
                     if (errorCall != null)
-                        errorCall.takeError(0);
+                        errorCall.signalError(0);
                     break;
                 case MESSAGE_TYPE_INFO:
                     break;
@@ -115,5 +123,19 @@ public class Djvulibre {
 }
 
 interface DjvulibreErrorCallback {
-    void takeError(int errorDescription);
+    void signalError(int errorDescription);
+}
+
+interface DjvulibreDocinfoCallback {
+    void signalDocinfo(int docinfoDescription);
+}
+
+interface DjvulibrePageinfoCallback {
+    void signalPageinfo(int pageinfoDescription);
+}
+
+// relayoutCallback necessary or not ?
+
+interface  DjvulibreRedisplayCallback {
+    void signalRedisplay(int redisplayDescription);
 }

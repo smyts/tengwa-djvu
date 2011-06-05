@@ -62,5 +62,25 @@ public class DataCatStub extends DataCatBase{
         }
     }
 
+    @Override
+    public void signalError(int errorDescription) {
+        // do smth
+    }
+
+    @Override
+    public void signalDocinfo(int docinfoDescription) {
+        // do smth
+    }
+
+    @Override
+    public void signalPageinfo(int pageinfoDescription) {
+
+    }
+
+    @Override
+    public void signalRedisplay(int redisplayDescription) {
+        // do smth
+    }
+
 }
 

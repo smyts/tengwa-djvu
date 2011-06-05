@@ -53,6 +53,10 @@ public class MainActivity extends Activity implements DataCatListener{
         //TODO: replace DataCatStub with real implementation
         mDataCat = new DataCatStub();
         mDataCat.bind(this);
+        Djvulibre.errorCall = mDataCat;
+        Djvulibre.docinfoCall = mDataCat;
+        Djvulibre.pageinfoCall = mDataCat;
+        Djvulibre.redisplayCall = mDataCat;
 
         if (savedInstanceState == null){
             startActivityForResult(new Intent(this, OpenFileActivity.class), OPEN_FILE_ACTIVITY);
