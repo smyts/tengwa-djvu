@@ -84,8 +84,8 @@ public class MainActivity extends Activity implements DataCatListener{
         if (mFileInfo != null) {
             outState.putString(FILE_PATH, mFileInfo.filePath);
             outState.putInt(CURRENT_PAGE, mCurrentPage);
+            mDbAdapter.create(mFileInfo.filePath, mCurrentPage);
         }
-        //TODO: update information in Recent database
     }
 
     @Override
@@ -210,16 +210,12 @@ public class MainActivity extends Activity implements DataCatListener{
                 Bundle data = intent.getExtras();
                 String path = data.getString(RecentDbAdapter.KEY_PATH);
                 String name = data.getString(RecentDbAdapter.KEY_NAME);
-                mCurrentPage = data.getInt(RecentDbAdapter.KEY_PAGE, -1);
-                {   //TODO: save path, name, page parameters and open file
-                    // this is stub, remove it
-                    if (name == null){
-                        int first = path.lastIndexOf('/'), last = path.lastIndexOf('.');
-                        name = path.substring(first + 1, last);
-                    }
-                    Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
-                    mDbAdapter.create(name, path, 1);
+                mCurrentPage = data.getInt(RecentDbAdapter.KEY_PAGE, 1);
+                if (name == null){
+                    int first = path.lastIndexOf('/'), last = path.lastIndexOf('.');
+                    name = path.substring(first + 1, last);
                 }
+                setTitle(name + " - " + getString(R.string.app_name));
                 showDialog(LOADING_DIALOG);
                 mDataCat.loadFile(path);
             } else if (mFileInfo == null) {
@@ -288,7 +284,7 @@ public class MainActivity extends Activity implements DataCatListener{
 
     public void takeFileInfo(FileInfo fileInfo) {
         mFileInfo = fileInfo;
-        //TODO: show file header
+        mDbAdapter.create(fileInfo.filePath, mCurrentPage);
         mDataCat.getPage(mCurrentPage);
     }
 

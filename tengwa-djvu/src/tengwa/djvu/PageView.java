@@ -145,11 +145,17 @@ public class PageView extends ImageView {
         updateImage();
     }
 
+    /*
+     * This constant value is used to detect cases of significant difference between page and
+     * screen width/heigth proportion
+     */
+    private static final int ALLOWABLE_ERROR = 300;
+
     public void fitPage(){
-        //TODO: replace magic constant with some documentation
         //zoom > 1 means showing whole page without fitting to page
         if (mCurrentZoom <= 1 ) {
-            if (Math.abs(mCurrentWidth * mScreenHeight - mCurrentHeight * mScreenWidth) > 100) {
+            if (Math.abs(mCurrentWidth * mScreenHeight - mCurrentHeight * mScreenWidth)
+                    > ALLOWABLE_ERROR) {
                 int width = (int) (mOriginalWidth * mCurrentZoom),
                         height = (int) (mOriginalHeight * mCurrentZoom);
                 if (width * mScreenHeight < height * mScreenWidth) {
