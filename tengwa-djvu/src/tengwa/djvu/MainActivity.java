@@ -49,7 +49,6 @@ public class MainActivity extends Activity implements DataCatListener{
         int cachesize = Djvulibre.cacheGetSize();
         Djvulibre.cacheSetSize(5 * (1 << 20));
         Djvulibre.cacheClear();
-        Djvulibre.contextRelease();
 
         //TODO: replace DataCatStub with real implementation
         mDataCat = new DataCatStub();
@@ -82,6 +81,13 @@ public class MainActivity extends Activity implements DataCatListener{
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Djvulibre.documentRelease();
+        Djvulibre.contextRelease();
     }
 
     @Override

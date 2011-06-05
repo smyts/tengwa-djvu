@@ -677,7 +677,7 @@ urlfopen(const GURL &url,const char mode[])
 static int
 urlopen(const GURL &url, const int mode, const int perm)
 {
-  return open((const char *)url.NativeFilename(),mode,perm);
+    return open((const char *)url.UTF8Filename().getbuf(),mode,perm);
 }
 #endif /* UNIX */
 

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.provider.Settings;
 
 public class DataCatStub extends DataCatBase{
     private final int[] mPages = {R.drawable.fight, R.drawable.lion, R.drawable.samurai,
@@ -26,6 +25,9 @@ public class DataCatStub extends DataCatBase{
         if (mListener != null) {
             mListener.takeFileInfo(new FileInfo(file, pageTotal));
         }
+        Djvulibre.documentRelease();
+        Djvulibre.documentCreate(file);
+        Djvulibre.handleDjvuMessages();
     }
 
     @Override

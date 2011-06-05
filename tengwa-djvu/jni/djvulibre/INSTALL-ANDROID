@@ -42,7 +42,27 @@ Installation:
                  #ifdef ANDROID_NDK
                  # undef HAVE_STDINCLUDES
                  # include <new>
-                 #endif           
+                 #endif         
+          * edit ByteStream.cpp, change:
+                 #ifdef UNIX
+                 static int
+                 urlopen(const GURL &url, const int mode, const int perm)
+                 {
+                   return open((const char *)url.NativeFilename(),mode,perm);
+                 }
+                 #endif /* UNIX */
+
+                 to
+
+                 #ifdef UNIX
+                 static int
+                 urlopen(const GURL &url, const int mode, const int perm)
+                 {
+                   return open((const char *)url.UTF8Filename().getbuf(),mode,perm);
+                 }
+                 #endif /* UNIX */
+
+  
 
 
 3) Run ndk-build command at the current directory.
