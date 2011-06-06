@@ -49,7 +49,6 @@ public class MainActivity extends Activity implements DataCatListener{
         mPageToast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
 
         mPage = (PageView) findViewById(R.id.doc_view);
-        mPage.setImageDrawable(getResources().getDrawable(R.drawable.gray_background));
 
         loadPreferences();
 
@@ -57,7 +56,8 @@ public class MainActivity extends Activity implements DataCatListener{
         mDbAdapter.open();
 
         //TODO: replace DataCatStub with real implementation
-        mDataCat = new DataCat();
+        //mDataCat = new DataCat();
+        mDataCat = new DataCatStub();
         mDataCat.bind(this);
         Djvulibre.errorCall = mDataCat;
         Djvulibre.docinfoCall = mDataCat;
@@ -88,13 +88,15 @@ public class MainActivity extends Activity implements DataCatListener{
         if (mFileInfo != null) {
             outState.putString(FILE_PATH, mFileInfo.filePath);
             outState.putInt(CURRENT_PAGE, mCurrentPage);
-            mDbAdapter.create(mFileInfo.filePath, mCurrentPage);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (mFileInfo != null) {
+            mDbAdapter.create(mFileInfo.filePath, mCurrentPage);
+        }
     }
 
     @Override
