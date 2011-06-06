@@ -1266,8 +1266,8 @@ miniexp_pname(miniexp_t p, int width)
   int (*saved)(const char*) = minilisp_puts;
   pname_data.b = 0;
   pname_data.m = pname_data.l = 0;
-  try
-    {
+  // try
+  //   {
       minilisp_puts = pname_puts;
       if (width > 0)
         miniexp_pprin(p, width);
@@ -1277,13 +1277,13 @@ miniexp_pname(miniexp_t p, int width)
       r = miniexp_string(pname_data.b);
       delete [] pname_data.b;
       pname_data.b = 0;
-    }
-  catch(...)
-    {
-      minilisp_puts = saved;
-      delete [] pname_data.b;
-      pname_data.b = 0;
-    }
+  //   }
+  // catch(...)
+  //   {
+    //   minilisp_puts = saved;
+    //   delete [] pname_data.b;
+    //   pname_data.b = 0;
+    // }
   return r;
 }
 

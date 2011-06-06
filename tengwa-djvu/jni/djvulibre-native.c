@@ -27,7 +27,7 @@ static ddjvu_format_style_t image_pixel_style = DDJVU_FORMAT_RGBMASK32;
 static int pixel_size = 4; // four bytes
 static unsigned int masks[] = {0xFF0000, 0x00FF00, 0x0000FF};
 static ddjvu_format_t *image_pixel_format = NULL;
-static int render_width = 960, render_height = 640;
+static int render_width = 640, render_height = 960;
 
 
 

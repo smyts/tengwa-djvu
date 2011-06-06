@@ -2,7 +2,7 @@ ANDROID_NDK_ROOT=$HOME/.android/android-ndk-r5b
 
 PREBUILT=$ANDROID_NDK_ROOT/toolchains/arm-eabi-4.4.0
 PLATFORM=$ANDROID_NDK_ROOT/platforms/android-5/arch-arm
-CPP_DIR=$ANDROID_NDK_ROOT/cxx-stl/gnu-libstdc++
+CPP_DIR=$ANDROID_NDK_ROOT/cxx-stl/stlport
 export CC=$ANDROID_NDK_ROOT/toolchains/arm-eabi-4.4.0/prebuilt/linux-x86/bin/arm-eabi-gcc
 
 LDFLAGS="-Wl,-rpath-link=$PLATFORM/usr/lib "
@@ -15,6 +15,7 @@ CFLAGS+=-DHAVE_SYS_TYPES_H
 export CFLAGS
 
 CPPFLAGS="-I$PLATFORM/usr/include "
+CPPFLAGS+="-I$CPP_DIR/stlport "
 #CPPFLAGS+="-I$CPP_DIR/include "
 #CPPFLAGS+="-I$CPP_DIR/libs/armeabi/include "
 export CPPFLAGS

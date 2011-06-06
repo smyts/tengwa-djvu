@@ -38,11 +38,19 @@ Installation:
                  #ifdef ANDROID_NDK
                  # undef UNIX
                  #endif           
-          * edit GException.cpp, put before DjVuGlobal.h include there:
-                 #ifdef ANDROID_NDK
-                 # undef HAVE_STDINCLUDES
-                 # include <new>
-                 #endif         
+          * edit GException.cpp, change:
+                    #   ifdef HAVE_STDINCLUDES
+                    static void (*old_handler)() = std::set_new_handler(throw_memory_error);
+                    #   else
+
+                    to
+
+                    #   ifdef HAVE_STDINCLUDES
+                    #    ifndef ANDROID_NDK
+                    static void (*old_handler)() = std::set_new_handler(throw_memory_error);
+                    #    endif
+                    #   else
+
           * edit ByteStream.cpp, change:
                  #ifdef UNIX
                  static int
@@ -61,6 +69,7 @@ Installation:
                    return open((const char *)url.UTF8Filename().getbuf(),mode,perm);
                  }
                  #endif /* UNIX */
+          * edit miniexp.cpp, comment out lines with exception handling
 
   
 
