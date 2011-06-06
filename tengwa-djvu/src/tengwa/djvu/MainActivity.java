@@ -14,8 +14,6 @@ import android.view.*;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.widget.Toast;
 
-import java.util.Formatter;
-
 public class MainActivity extends Activity implements DataCatListener{
     public static final int GO_TO_DIALOG = 1;
     public static final int ABOUT_DIALOG = 2;
@@ -30,8 +28,8 @@ public class MainActivity extends Activity implements DataCatListener{
 
     private RecentDbAdapter mDbAdapter;
     private DataCatBase mDataCat;
-    private int mCurrentPage;
-    private FileInfo mFileInfo;
+    static int mCurrentPage;
+    static FileInfo mFileInfo;
     private int mError;
 
     private Toast mPageToast;
@@ -55,9 +53,7 @@ public class MainActivity extends Activity implements DataCatListener{
         mDbAdapter = new RecentDbAdapter(getApplicationContext());
         mDbAdapter.open();
 
-        //TODO: replace DataCatStub with real implementation
-        //mDataCat = new DataCat();
-        mDataCat = new DataCatStub();
+        mDataCat = new DataCat();
         mDataCat.bind(this);
         Djvulibre.errorCall = mDataCat;
         Djvulibre.docinfoCall = mDataCat;
@@ -67,9 +63,9 @@ public class MainActivity extends Activity implements DataCatListener{
         if (savedInstanceState == null){
             startActivityForResult(new Intent(this, OpenFileActivity.class), OPEN_FILE_ACTIVITY);
         } else {
-            mDataCat.loadFile(savedInstanceState.getString(FILE_PATH));
-            mCurrentPage = savedInstanceState.getInt(CURRENT_PAGE);
             showDialog(LOADING_DIALOG);
+            mCurrentPage = savedInstanceState.getInt(CURRENT_PAGE);
+            mDataCat.loadFile(savedInstanceState.getString(FILE_PATH));
         }
 
         mDetector = new GestureDetector(this, new SimpleOnGestureListener(){
@@ -159,13 +155,13 @@ public class MainActivity extends Activity implements DataCatListener{
             });
             return builder.create();
         case GO_TO_DIALOG:
-            Formatter f = new Formatter();
-            f.format(getString(R.string.go_to_header), mCurrentPage, mFileInfo.pageTotal);
-            GoToDialog dialog = new GoToDialog(this, f.toString());
+            GoToDialog dialog = new GoToDialog(this);
+
             dialog.setGoToPageAction(new GoToDialog.GoToPageAction(){
                 public void goToPage(int page) {
                     if (page > 0 && page <= mFileInfo.pageTotal) {
                         mCurrentPage = page;
+                        showDialog(LOADING_DIALOG);
                         mDataCat.getPage(page);
                     }
                 }
@@ -212,7 +208,9 @@ public class MainActivity extends Activity implements DataCatListener{
             loadPreferences();
             break;
         case OPEN_FILE_ACTIVITY:
-            if (resultCode == RESULT_OK){
+            if (resultCode == OpenFileActivity.CLOSE_APPLICATION) {
+                moveTaskToBack(true);
+            }else if (resultCode == RESULT_OK){
                 Bundle data = intent.getExtras();
                 String path = data.getString(RecentDbAdapter.KEY_PATH);
                 String name = data.getString(RecentDbAdapter.KEY_NAME);
@@ -236,6 +234,16 @@ public class MainActivity extends Activity implements DataCatListener{
     public boolean onTouchEvent(MotionEvent event) {
         return mDetector.onTouchEvent(event);
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            startActivityForResult(new Intent(this, OpenFileActivity.class), OPEN_FILE_ACTIVITY);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 
     private void loadPreferences(){
         if (mDataCat != null)
@@ -262,16 +270,16 @@ public class MainActivity extends Activity implements DataCatListener{
             break;
         case R.id.toolbar_prev:
             if (mCurrentPage > 1 && mDataCat != null) {
+                showDialog(LOADING_DIALOG);
                 mDataCat.getPage(mCurrentPage - 1);
                 --mCurrentPage;
-                showDialog(LOADING_DIALOG);
             }
             break;
         case R.id.toolbar_next:
             if (mCurrentPage < mFileInfo.pageTotal && mDataCat != null) {
+                showDialog(LOADING_DIALOG);
                 mDataCat.getPage(mCurrentPage + 1);
                 ++mCurrentPage;
-                showDialog(LOADING_DIALOG);
             }
             break;
         }

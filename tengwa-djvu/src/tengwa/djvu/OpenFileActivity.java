@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -16,6 +17,8 @@ import java.util.List;
 
 public class OpenFileActivity extends Activity {
     public static final int PICK_FILE = 0;
+    public static final int CLOSE_APPLICATION = 1;
+
     private RecentDbAdapter mDbAdapter;
     private Cursor mRecentCursor;
 
@@ -74,10 +77,19 @@ public class OpenFileActivity extends Activity {
                 i.putExtra(RecentDbAdapter.KEY_PATH, path);
                 setResult(RESULT_OK, i);
                 finish();
-                mRecentCursor.close();
             }
             break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            setResult(CLOSE_APPLICATION);
+            finish();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
