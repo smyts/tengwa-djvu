@@ -21,6 +21,7 @@ public class Djvulibre {
         sMessageTypes = new int[MESSAGES_LENGTH];
         sMessageArguments = new Object[MESSAGES_LENGTH];
         sLastMessage = -1;
+        sStartMessage = 0;
         errorCall = null;
         sLastPage = -1;
         sLastPageObj = -1;
@@ -65,6 +66,7 @@ public class Djvulibre {
     public static int[] sMessageTypes;
     public static Object[] sMessageArguments;
     public static int sLastMessage;
+    public static int sStartMessage;
 
     /*
      * Application-level cache of pages
@@ -117,13 +119,15 @@ public class Djvulibre {
     }
 
     public static void handleMessages() {
-        int status;
 
-        for (int curId = 0; curId <= sLastMessage; ++curId) {
+        for (int curId = sStartMessage; curId <= sLastMessage; ++curId) {
+            sStartMessage = curId + 1;
+
             switch (sMessageTypes[curId]) {
                 case MESSAGE_TYPE_ERROR:
-                    if (errorCall != null)
+                    if (errorCall != null) {
                         errorCall.signalError(0);
+                    }
                     break;
                 case MESSAGE_TYPE_INFO:
                     break;
@@ -155,18 +159,17 @@ public class Djvulibre {
         }
 
         sLastMessage = -1;
+        sStartMessage = 0;
     }
 
     static void getPage(int pageno) {
-        if (sLastPage != pageno) {
-            if (sLastPageObj != -1)
-                Djvulibre.pageRelease(sLastPageObj);
-            sLastPage = pageno;
-            sLastPageObj = Djvulibre.pageCreateByPageno(pageno);
-            Djvulibre.handleDdjvuPageinfo(Djvulibre.waitPage(sLastPageObj));
-            Djvulibre.handleDjvuMessages(0);
-            Djvulibre.handleMessages();
-        }
+        if (sLastPageObj != -1)
+            Djvulibre.pageRelease(sLastPageObj);
+        sLastPage = pageno;
+        sLastPageObj = Djvulibre.pageCreateByPageno(pageno);
+        Djvulibre.handleDdjvuPageinfo(Djvulibre.waitPage(sLastPageObj));
+        Djvulibre.handleDjvuMessages(0);
+        Djvulibre.handleMessages();
     }
 
     static void checkResize(int lastMessage) {

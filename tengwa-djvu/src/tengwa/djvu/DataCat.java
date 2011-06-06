@@ -36,7 +36,7 @@ public class DataCat extends DataCatBase {
         if (!mFileLoaded) {
             mListener.takeError(DataCatListener.ERROR_FILE_NOT_OPENED);
         } else if (page > 0 && page <= mPagesTotal) {
-            Djvulibre.getPage(page);
+            Djvulibre.getPage(page - 1);
         } else {
             mListener.takeError(DataCatListener.ERROR_NO_SUCH_PAGE);
         }
