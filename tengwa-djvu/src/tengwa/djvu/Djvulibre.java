@@ -7,6 +7,8 @@
 package tengwa.djvu;
 
 
+import android.os.AsyncTask;
+
 public class Djvulibre {
      /*
       * Initial size of the message arrays
@@ -97,8 +99,26 @@ public class Djvulibre {
     static native int getPagenum();
     static native long pageCreateByPageno(int pageno);
     static native void pageRelease(long pageobj);
+    static native void installCallback();
+    static native int waitPage(long pageobj);
+    static native int getPageHeight();
+    static native int getPageWidth();
+    static native int getPixelSize();
+    static native int getRenderHeight();
+    static native int getRenderWidth();
+    static native int[] getPageImage(long pageobj);
+    static native void setRenderHeight();
+    static native void setRenderWidth();
+    static native void setPixelDepth(int bits);
+
+    public static void handleCallback() {
+        installCallback();
+        new HandleMessages().execute();
+    }
 
     public static void handleMessages() {
+        int status;
+
         for (int curId = 0; curId <= sLastMessage; ++curId) {
             switch (sMessageTypes[curId]) {
                 case MESSAGE_TYPE_ERROR:
@@ -110,8 +130,14 @@ public class Djvulibre {
                 case MESSAGE_TYPE_NEWSTREAM:
                     break;
                 case MESSAGE_TYPE_DOCINFO:
+                    if (docinfoCall != null) {
+                        docinfoCall.signalDocinfo((Integer) sMessageArguments[curId]);
+                    }
                     break;
                 case MESSAGE_TYPE_PAGEINFO:
+                    if (pageinfoCall != null) {
+                        pageinfoCall.signalPageinfo((Integer) sMessageArguments[curId]);
+                    }
                     break;
                 case MESSAGE_TYPE_RELAYOUT:
                     break;
@@ -133,9 +159,13 @@ public class Djvulibre {
 
     static void getPage(int pageno) {
         if (sLastPage != pageno) {
-            Djvulibre.pageRelease(sLastPageObj);
+            if (sLastPageObj != -1)
+                Djvulibre.pageRelease(sLastPageObj);
             sLastPage = pageno;
             sLastPageObj = Djvulibre.pageCreateByPageno(pageno);
+            Djvulibre.handleDdjvuPageinfo(Djvulibre.waitPage(sLastPageObj));
+            Djvulibre.handleDjvuMessages(0);
+            Djvulibre.handleMessages();
         }
     }
 
@@ -163,6 +193,32 @@ public class Djvulibre {
         checkResize(sLastMessage);
         sMessageTypes[sLastMessage] = MESSAGE_TYPE_PAGEINFO;
         sMessageArguments[sLastMessage] = (Object) status;
+    }
+
+    private static class HandleMessages extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void voids) {
+            Djvulibre.handleDjvuMessages(0);
+            Djvulibre.handleMessages();
+        }
+    }
+
+    private static class WaitForPage extends AsyncTask<Void, Void, Void> {
+        private long mPageObj;
+
+        public WaitForPage(long pageobj) {
+            mPageObj = pageobj;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
     }
 }
 

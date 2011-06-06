@@ -18,6 +18,20 @@ static const char *LOG_TAG = "Djvulibre native";
 // toggle document cache usage
 static int main_cache = 1;
 
+// save JNIEnv, class, method for callback
+static JNIEnv *callback_env;
+static const char *DJVULIBRE_CLASSNAME = "tengwa/djvu/Djvulibre";
+
+// settings for images
+static ddjvu_format_style_t image_pixel_style = DDJVU_FORMAT_RGBMASK32;
+static int pixel_size = 4; // four bytes
+static unsigned int masks[] = {0xFF0000, 0x00FF00, 0x0000FF};
+static ddjvu_format_t *image_pixel_format = NULL;
+static int render_width = 640, render_height = 480;
+
+
+
+
 jint Java_tengwa_djvu_Djvulibre_contextCreate (JNIEnv *env, jobject this) {
     __android_log_write (ANDROID_LOG_INFO, LOG_TAG, 
                          "Attempt to create context...");
@@ -237,7 +251,7 @@ jint Java_tengwa_djvu_Djvulibre_getPagenum (JNIEnv *env, jobject this) {
     return (jint) ddjvu_document_get_pagenum (main_document);
 }
 
-jlong Java_tengwa_djvu_Djvulibre_pageCreateByPagneno (JNIEnv *env, jobject this, 
+jlong Java_tengwa_djvu_Djvulibre_pageCreateByPageno (JNIEnv *env, jobject this, 
                                                      jint pageno) {
     __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
                          "Creating page by pageno...");
@@ -250,4 +264,138 @@ void Java_tengwa_djvu_Djvulibre_pageRelease (JNIEnv *env, jobject this,
     __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
                          "Releasing page...");
     ddjvu_page_release ((ddjvu_page_t*) pageobj);
+}
+
+void messageHandleCallback (ddjvu_context_t *ctx, void *closure) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Executing callback...");
+
+    static jclass cls = NULL;
+    static jmethodID mid = NULL;
+
+    if (cls == NULL) {
+        cls = (*callback_env)->FindClass (callback_env, 
+                                          DJVULIBRE_CLASSNAME);
+    }
+
+    if (mid == NULL) {
+        mid =  (*callback_env)->GetStaticMethodID (callback_env, cls, 
+                                                   "handleCallback", "()V");
+    }
+
+    (*callback_env)->CallStaticVoidMethod (callback_env, cls, mid);
+}
+
+void Java_tengwa_djvu_Djvulibre_installCallback (JNIEnv *env, jclass cls) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Installing callback...");
+
+    callback_env = env;
+    ddjvu_message_set_callback (main_context, 
+                                (ddjvu_message_callback_t) messageHandleCallback,
+                                NULL);
+
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Callback installed...");
+
+}
+
+jint Java_tengwa_djvu_Djvulibre_waitPage (JNIEnv *env, jclass cls, jlong pageobj) {
+    int status = ddjvu_page_decoding_status ((ddjvu_page_t*) pageobj);
+
+    while ((status = ddjvu_page_decoding_status ((ddjvu_page_t*) pageobj)) < 
+           DDJVU_JOB_OK) {
+
+        __android_log_print (ANDROID_LOG_INFO, LOG_TAG,
+                             "Waiting for page (status = %d)...", status);
+
+        Java_tengwa_djvu_Djvulibre_handleDjvuMessages (env, cls, 1);
+    }
+
+    __android_log_print (ANDROID_LOG_INFO, LOG_TAG,
+                         "Waiting for page (status = %d)...", status);
+
+    return status;
+}
+
+jint Java_tengwa_djvu_Djvulibre_getPageHeight (JNIEnv *env, jclass cls, jlong pageobj) {
+    return ddjvu_page_get_height ((ddjvu_page_t*) pageobj);
+}
+
+jint Java_tengwa_djvu_Djvulibre_getPageWidth (JNIEnv *env, jclass cls, jlong pageobj) {
+    return ddjvu_page_get_width ((ddjvu_page_t*) pageobj);
+}
+
+jint Java_tengwa_djvu_Djvulibre_getPixelSize (JNIEnv *env, jclass cls, jlong pageobj) {
+    return pixel_size;
+}
+
+static void prepare_image_format () {
+    if (image_pixel_format == NULL) {
+        image_pixel_format = ddjvu_format_create (image_pixel_style, 3, masks);
+        ddjvu_format_set_row_order (image_pixel_format, 1);
+        ddjvu_format_set_y_direction (image_pixel_format, 1);
+    }
+}
+
+jint Java_tengwa_djvu_Djvulibre_getRenderHeight (JNIEnv *env, jclass cls) {
+    return (jint)render_height;
+}
+
+jint Java_tengwa_djvu_Djvulibre_getRenderWidth (JNIEnv *env, jclass cls) {
+    return (jint) render_width;
+}
+
+
+void Java_tengwa_djvu_Djvulibre_setRenderHeight (JNIEnv *env, jclass cls, int height) {
+    render_height = height;
+}
+
+void Java_tengwa_djvu_Djvulibre_setRenderWidth (JNIEnv *env, jclass cls, int width) {
+    render_width = width;
+}
+
+
+void Java_tengwa_djvu_Djvulibre_setPixelDepth (JNIEnv *env, jclass cls, int bits) {
+    prepare_image_format ();
+    ddjvu_format_set_ditherbits (image_pixel_format, bits);
+}
+
+jintArray Java_tengwa_djvu_Djvulibre_getPageImage (JNIEnv *env, jclass cls, 
+                                                    jlong pageobj) {
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Getting image for page...");
+    prepare_image_format ();
+
+    int width, height, size;
+    height = render_height;
+    width = render_width;
+    size = height * width;
+
+    __android_log_print (ANDROID_LOG_INFO, LOG_TAG,
+                         "height = %d\nwidth = %d\nsize = %d",
+                         height, width, size);
+
+
+    int *imgbuf = malloc (size * sizeof(int));
+
+    ddjvu_rect_t pagerect, renderrect;
+    pagerect.x = pagerect.y = 0;
+    pagerect.w = width;
+    pagerect.h = height;
+    renderrect = pagerect;
+
+    ddjvu_page_render ((ddjvu_page_t*) pageobj, DDJVU_RENDER_COLOR,
+                       &pagerect, &renderrect, image_pixel_format,
+                       width * pixel_size, imgbuf);
+
+    __android_log_write (ANDROID_LOG_INFO, LOG_TAG,
+                         "Page has beed rendered");
+
+
+    jintArray img = (*env)->NewIntArray (env, size);
+    (*env)->SetIntArrayRegion (env, img, 0, size, imgbuf);
+
+    free (imgbuf);
+    return img;
 }

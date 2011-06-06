@@ -1,22 +1,22 @@
 package tengwa.djvu;
 
 
-import android.content.Context;
-import android.os.AsyncTask;
+import android.graphics.Bitmap;
 
 public class DataCat extends DataCatBase {
+    private final int[] mPages = {R.drawable.fight, R.drawable.lion, R.drawable.samurai,
+            R.drawable.zzz};
     private boolean mFileLoaded = false;
     private String mFilepath;
     private int mPagesTotal;
-    private HandleMessages bgHandler;
+
 
     public int cacheSize = 5 * (1 << 20);
 
     public DataCat() {
         Djvulibre.contextCreate();
+        Djvulibre.installCallback();
         this.updatePreferences();
-        bgHandler = new HandleMessages((Context)mListener);
-        bgHandler.execute();
     }
 
     @Override
@@ -29,14 +29,14 @@ public class DataCat extends DataCatBase {
         mFilepath = filepath;
         Djvulibre.documentRelease();
         Djvulibre.documentCreate(mFilepath);
-    }
+     }
 
     @Override
     public void getPage(int page) {
         if (!mFileLoaded) {
             mListener.takeError(DataCatListener.ERROR_FILE_NOT_OPENED);
         } else if (page > 0 && page <= mPagesTotal) {
-            long pageobj = Djvulibre.pageCreateByPageno(page);
+            Djvulibre.getPage(page);
         } else {
             mListener.takeError(DataCatListener.ERROR_NO_SUCH_PAGE);
         }
@@ -49,12 +49,33 @@ public class DataCat extends DataCatBase {
 
     @Override
     public void signalDocinfo(int docinfoDescription) {
-
+        if (docinfoDescription == Djvulibre.JOB_OK) {
+            mFileLoaded = true;
+            mPagesTotal = Djvulibre.getPagenum();
+            FileInfo fileInfo = new FileInfo(mFilepath, mPagesTotal);
+            mListener.takeFileInfo(fileInfo);
+        } else if (docinfoDescription >= Djvulibre.JOB_FAILED) {
+            mListener.takeError(DataCatListener.ERROR_FILE_NOT_OPENED);
+        }
     }
 
     @Override
     public void signalPageinfo(int pageinfoDescription) {
+        int[] img;
+        if (pageinfoDescription == Djvulibre.JOB_OK) {
+            img = Djvulibre.getPageImage(Djvulibre.sLastPageObj);
+            int width, height;
 
+            height = Djvulibre.getRenderHeight();
+            width = Djvulibre.getRenderWidth();
+            Bitmap bmp = Bitmap.createBitmap(img, width, height,
+                    Bitmap.Config.RGB_565);
+
+
+            mListener.takePage(bmp);
+        } else if (pageinfoDescription >= Djvulibre.JOB_FAILED) {
+            mListener.takeError(DataCatListener.ERROR_NO_SUCH_PAGE);
+        }
     }
 
     @Override
@@ -65,30 +86,5 @@ public class DataCat extends DataCatBase {
     @Override
     public void signalHandle() {
 
-    }
-
-    private class HandleMessages extends AsyncTask<Void, Void, Void> {
-        private Context mContext;
-
-        public HandleMessages(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            Djvulibre.handleDjvuMessages(1);
-            this.publishProgress();
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... voids) {
-            Djvulibre.handleMessages();
-        }
-
-        @Override
-        protected void onPostExecute(Void vd) {
-            //do smth
-        }
     }
 }
