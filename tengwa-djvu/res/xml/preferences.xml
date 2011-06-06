@@ -6,11 +6,10 @@
                         android:title="@string/toolbar_on"
                         android:defaultValue="true" />
 
-    <EditTextPreference android:key="zoom_factor"
-                        android:title="@string/zoom_factor"
-                        android:dialogTitle="@string/zoom_factor"
-                        android:dialogMessage="@string/zoom_factor_limitation"
+    <EditTextPreference android:key="step_scale"
+                        android:title="@string/step_scale"
+                        android:dialogTitle="@string/step_scale"
                         android:numeric="decimal"
-                        android:defaultValue="2" />
+                        android:defaultValue="0.2" />
 
 </PreferenceScreen>
