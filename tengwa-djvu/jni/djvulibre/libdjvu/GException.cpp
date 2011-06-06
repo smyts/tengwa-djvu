@@ -56,10 +56,6 @@
 // $Id: GException.cpp,v 1.15 2007/03/25 20:48:31 leonb Exp $
 // $Name:  $
 
-#ifdef ANDROID_NDK
-# undef HAVE_STDINCLUDES
-# include <new>
-#endif 
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -273,7 +269,9 @@ static int (*old_handler)(size_t) = _set_new_handler(throw_memory_error);
 static void throw_memory_error() { G_THROW(GException::outofmemory); }
 #  if !defined(WIN32) && !defined(__CYGWIN32__) && !defined(OS2)
 #   ifdef HAVE_STDINCLUDES
+#    ifndef ANDROID_NDK
 static void (*old_handler)() = std::set_new_handler(throw_memory_error);
+#    endif
 #   else
 static void (*old_handler)() = set_new_handler(throw_memory_error);
 #   endif // HAVE_STDINCLUDES
